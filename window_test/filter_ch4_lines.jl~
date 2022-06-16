@@ -1,0 +1,83 @@
+using RadiativeTransfer, Distributed
+addprocs(40)
+@everywhere using SpectralFits
+using Dates, StatsBase, Revise
+#using ForwardDiff: JacobianConfig, Chunk, jacobian!
+using ForwardDiff, JLD2
+
+@sync @everywhere fit_spectra
+masked_range_ch4 = [6109.211 6109.411; 6116.137 6116.464; 6119.62 6120; 6088.826 6089.246; 6087.358 6087.652; 6076.742 6078.55; 6063.577 6064.077; 6058.666 6059.153; 6109.885 6110.071 ];
+
+
+function find_mask(grid, maskMatrix)
+    # Find all indices in the grid that is within the subwindows:
+    all = [findall(i -> (i>maskMatrix[j,1])&(i<maskMatrix[j,2]), grid) for j=1:size(maskMatrix,1)];
+    # Return all indices:
+    vcat(all...)
+end
+
+
+
+# define the reetrieval parameters
+inversion_setup = Dict{String,Any}(
+    "poly_degree" => 100,
+    "fit_pressure" => true,
+    "fit_temperature" => true,
+    "use_OCO" => false,
+    "use_TCCON" => false,
+    "architecture" => CPU(),
+"averaging_window" => Minute(15),
+"verbose_mode" => true,
+fit_column => true)
+
+# Just defining the spectral windows for each species
+ν_CH4 = (6050, 6120)
+                        ν_CO2 = (6205, 6255);
+ν_HDO = (6346, 6354) #(6310,6380);
+
+# Read the DCS DAta 
+#data = read_DCS_data("../../data/DCSA/DCS_A_1/20160926.h5")
+data = read_DCS_data("/net/fluo/data1/data/NIST/DCS_A/20160924.h5")
+data = take_time_average(data, δt=Minute(15))
+measurement =  get_measurement(1, data, ν_CH4[1], ν_CH4[2]) # get 1 measurement
+
+ind = find_mask(measurement.grid, masked_range_ch4);
+ind = find_mask(measurement.grid, masked_range_ch4);
+
+inversion_setup["masked_indexes"] = ind
+
+#Sₑ = SpectralFits.make_obs_error(measurement)
+#for i in ind
+#    Sₑ[i, i] =0
+#end
+#
+#println(length(ind))
+#inversion_setup["obs_covarience"] = Sₑ
+
+ν_min, ν_max = ν_CH4[1]-1, ν_CH4[2]+1
+ν_range = ν_min:ν_max
+
+# Get the HiTran parameters
+CH₄ = get_molecule_info("CH4", "../06_hit08.par", 6, 1, ν_range)
+H₂O = get_molecule_info("H2O", "../../data/linelists/2020_experimental/atm.161", 1, 1, ν_range)
+#H₂O = get_molecule_info("H2O", "../H2O_S.data", 1, 1, ν_range)
+CO₂ = get_molecule_info("CO2", "../12CO2_20.par", 2,1,ν_range)
+#HDO = get_molecule_info("HDO", "../HDO_S.data", 1,4,ν_range)
+#H₂S = get_molecule_info("H2S", "../H2S_20.data", 31,1,ν_range)
+# Calculate the cross-sections and store in dictionary
+molecules = [H₂O, CH₄, CO₂]
+spec = construct_spectra(molecules, ν_grid=ν_min:0.002:ν_max, p=measurement.pressure, T=measurement.temperature)
+
+# define the initial guess 
+xₐ = OrderedDict{Any,Any}("H2O" => 0.01,
+    "CH4" => 2000e-9,
+                          "CO2" => 400e-6,
+                  "pressure" => mean(data.pressure),
+                  "temperature" => mean(data.temperature),
+                  "shape_parameters" => [maximum(measurement.intensity); zeros(inversion_setup["poly_degree"]-1)])
+spectral_windows = [ν_CH4]
+#f = generate_forward_model(xₐ, measurement, spec, inversion_setup);
+#results = nonlinear_inversion(f, xₐ, measurement, spec, inversion_setup)
+spectral_windows = [ν_CH4]
+results = run_inversion(xₐ, data, molecules, inversion_setup, spectral_windows)
+@save "filter_hit08_lines.JLD2" results 
