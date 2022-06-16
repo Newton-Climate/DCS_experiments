@@ -6,7 +6,7 @@ addprocs(2)
 
 # get data directories 
 data_path = "/net/fluo/data1/data/NIST/DCS_A/"
-output_path = joinpath(data_path, "TCCON_results/")
+output_path = joinpath(data_path, "OCO_results/")
 datadir = "/net/fluo/data1/data/NIST/spectra/"
 
 # define the retrieval parameters 
