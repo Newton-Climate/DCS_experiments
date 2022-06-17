@@ -76,7 +76,9 @@ a = ones(n)
 inversion_setup["σ"] = σ
 
 ### define a customized Sₐ⁻¹
-inversion_setup["Sₐ⁻¹"] = SpectralFits.make_prior_error(σ)
+nGases = 3
+pcorr = [50.0, 100.0, 100.0]
+inversion_setup["Sₐ⁻¹"] = make_prior_error(σ, nGases, measurement.pressure, pcorr)
 
 
 # generate synthetic data 
