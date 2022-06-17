@@ -60,24 +60,29 @@ x_true = OrderedDict{String, Vector{Float64}}("H2O" => h2o .* vcd,
                                               "shape_parameters" => [maximum(measurement.intensity); zeros(inversion_setup["poly_degree"]-1)])
 
 #              # a priori state vector
-xₐ = OrderedDict{String, Vector{Float64}}("H2O" => 0.05 * vcd,
+xₐ = OrderedDict{String, Vector{Float64}}("H2O" => 0.01 * vcd,
                                                          "CH4" => 1900e-9 * vcd,
                                                          "CO2" => 405e-6 * vcd,
                                           "shape_parameters" => [maximum(measurement.intensity); zeros(inversion_setup["poly_degree"]-1)])
 
 ## define a priori 
 a = ones(n)
-σ = OrderedDict{String, Vector{Float64}}("H2O" => 0.1*vcd,
-                                                         "CH4" => 600e-9*vcd,
-                                                         "CO2" => 100e-6 * vcd,
+σ = OrderedDict{String, Vector{Float64}}("H2O" => 0.5 * h2o .* vcd,
+                                                         "CH4" => 200e-9*vcd,
+                                                         "CO2" => 30e-6 * vcd,
                   "shape_parameters" => ones(inversion_setup["poly_degree"]))
 
 ## save in setup dictionary 
 inversion_setup["σ"] = σ
 
 ### define a customized Sₐ⁻¹
+
+# Number of gases:
 nGases = 3
-pcorr = [50.0, 100.0, 100.0]
+# Correlation length scale (in pressure) for the n Gases:
+pcorr = [0.01, 50.0, 50.0]
+# Call custom make_prior_error function
+# include("custom_Sa.jl")
 inversion_setup["Sₐ⁻¹"] = make_prior_error(σ, nGases, measurement.pressure, pcorr)
 
 
