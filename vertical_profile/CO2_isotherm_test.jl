@@ -5,7 +5,7 @@ using SpectralFits, vSmartMOM, Dates, DiffResults, ForwardDiff, JLD2, Revise, St
 ν_grid = 6180:0.002:6260.0
 
 # directory to line-lists or lookup tables 
-datadir = "../../retrieval/julia/data"
+datadir = "/net/fluo/data1/data/NIST/DCS_A/"
 
 ## get a measurement struct 
 data = read_DCS_data(joinpath(datadir, "20160921.h5"))
@@ -21,7 +21,8 @@ inversion_setup = Dict{String,Any}(
 "architecture" => CPU(),
 "fit_column" => true)
 
-## get molecular data 
+## get molecular data
+datadir = "/net/fluo/data1/data/NIST/spectra/"
 CH₄ = get_molecule_info("CH4", joinpath(datadir, "hit20_12CH4.jld2"), ν_grid)
 H₂O = get_molecule_info("H2O", joinpath(datadir, "hit20_H2O.jld2"), ν_grid)
 CO₂ = get_molecule_info("CO2", joinpath(datadir, "hit20_12CO2.jld2"), ν_grid)
