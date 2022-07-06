@@ -1,0 +1,13 @@
+using SpectralFits
+
+function DOF(in::AbstractResults, ind)
+
+    # calculate gain matrix
+    G = calc_gain_matrix(in)
+
+    # Averaging Kernal
+    A = G * in.K
+
+    degrees = tr(A[ind, ind])
+    return degrees
+end

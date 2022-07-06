@@ -1,13 +1,13 @@
-using SpectralFits, vSmartMOM, Dates, DiffResults, ForwardDiff, JLD2, Revise, Statistics
-
+using SpectralFits, vSmartMOM, Dates, JLD2, Revise, Statistics
+include("util.jl")
 
 ## define spectral window
 ν_CH4 = (6050, 6120)
 ν_grid = ν_CH4[1]:0.002:ν_CH4[2]
 
 # directory to line-lists or lookup tables 
-#datadir = "../../retrieval/julia/data"
-datadir = "/net/fluo/data1/data/NIST/DCS_A/"
+datadir = "../../retrieval/julia/data"
+#datadir = "/net/fluo/data1/data/NIST/DCS_A/"
 
 ## get a measurement struct 
 data = read_DCS_data(joinpath(datadir, "20160921.h5"))
@@ -24,7 +24,7 @@ inversion_setup = Dict{String,Any}(
 "fit_column" => true)
 
 ## get molecular data
-datadir = "/net/fluo/data1/data/NIST/spectra/"
+#datadir = "/net/fluo/data1/data/NIST/spectra/"
 CH₄ = get_molecule_info("CH4", joinpath(datadir, "hit20_12CH4.jld2"), ν_grid)
 H₂O = get_molecule_info("H2O", joinpath(datadir, "hit20_H2O.jld2"), ν_grid)
 CO₂ = get_molecule_info("CO2", joinpath(datadir, "hit20_12CO2.jld2"), ν_grid)
@@ -82,7 +82,7 @@ nGases = 3
 # Correlation length scale (in pressure) for the n Gases:
 pcorr = [0.01, 50.0, 50.0]
 # Call custom make_prior_error function
-# include("custom_Sa.jl")
+ include("custom_Sa.jl")
 inversion_setup["Sₐ⁻¹"] = make_prior_error(σ, nGases, measurement.pressure, pcorr)
 
 
@@ -106,3 +106,10 @@ println(ch4_idealized)
 vcd_idealized = vcd;
 @save "CH4_profile.jld2" result p0 T0 vcd xₐ x_true ch4_idealized
 
+n = num_layers
+h2o_ind = 1:num_layers
+ch4_ind = num_layers+1:2*num_layers
+co2_ind = 2*num_layers+1:3*num_layers
+
+degrees = DOF(result, ch4_ind)
+@show degrees 
