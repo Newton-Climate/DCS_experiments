@@ -47,7 +47,7 @@ measurement =  get_measurement(1, data, ν_CH4[1], ν_CH4[end]) # get 1 measurem
 #datadir = "/Users/newtn/projects/FreqComb/retrieval/julia/data"
 datadir = "/net/fluo/data1/data/NIST/spectra"
 CH₄ = get_molecule_info("CH4", joinpath(datadir, "hit16_12CH4.jld2"), ν_grid)
-H₂O = get_molecule_info("H2O", joinpath(datadir, "TCCON_H2O.jld2"), ν_grid)
+H₂O = get_molecule_info("H2O", joinpath(datadir, "tccon_H2O.jld2"), ν_grid)
 molecules = [H₂O, CH₄]
 
 ## define the initial guess
@@ -66,4 +66,4 @@ xₐ = StateVector("H2O" => 0.01 * vcd,
 # for the entire dataset
 spectral_windows = [ν_CH4]
 results = run_inversion(xₐ, data, molecules, setup, spectral_windows)
-@save "filter_hit16_lines.jld2" results
+@save "masked_hit16_lines.jld2" results
