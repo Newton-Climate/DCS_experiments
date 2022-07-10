@@ -31,7 +31,7 @@ end
     datadir = "/net/fluo/data1/data/NIST/spectra/"
     CH₄_08 = get_molecule_info("CH4", joinpath(datadir, "hit08_12CH4.jld2"), ν_grid)
     CH₄_16 = get_molecule_info("CH4", joinpath(datadir, "hit16_12CH4.jld2"), ν_grid)
-    H₂O = get_molecule_info("H2O", joinpath(datadir, "hit20_H2O.jld2"), ν_grid)
+    H₂O = get_molecule_info("H2O", joinpath(datadir, "tccon_H2O.jld2"), ν_grid)
     molecules_08 = [H₂O, CH₄_08]
 molecules = [H₂O, CH₄_20]
 end
@@ -97,5 +97,5 @@ end
 
 out = pmap(x->retrieve(x[1], x[2], inversion_setup),params) 
 println("done with all data. saving")
-@save "ch4_hit20_error.JLD2" out p T
+@save "ch4_hit16_error.JLD2" out p T
 
