@@ -8,7 +8,7 @@ using JLD2
 
 """
 Runs the script to mask out CH₄ lines 
-Using Hitran 20 line-list
+Using Hitran 16 line-list
 """
 
 
@@ -60,10 +60,16 @@ xₐ = StateVector("H2O" => 0.01 * vcd,
 
 ## run the retrieval
 # for only one run
-#f = generate_forward_model(xₐ, measurement, molecules, setup);
-#results = nonlinear_inversion(f, xₐ, measurement, molecules, _setup)
+#molecules = setup_molecules(molecules)
+#@time f = generate_forward_model(xₐ, measurement, molecules, setup);
+#results = nonlinear_inversion(f, xₐ, measurement, molecules, setup)
 
 # for the entire dataset
 spectral_windows = [ν_CH4]
 results = run_inversion(xₐ, data, molecules, setup, spectral_windows)
 @save "masked_hit16_lines.jld2" results
+
+
+
+
+

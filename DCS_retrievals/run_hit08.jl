@@ -39,9 +39,9 @@ measurement =  get_measurement(1, data, ν_CO2[1], ν_CO2[2]) # get 1 measuremen
 ## Get the HiTran parameters
 datadir = "/net/fluo/data1/data/NIST/spectra/"
 CH₄ = get_molecule_info("CH4", joinpath(datadir, "hit08_12CH4.jld2"), ν_grid)
-H₂O = get_molecule_info("H2O", joinpath(datadir, "TCCON_H2O.jld2"), ν_grid)
+H₂O = get_molecule_info("H2O", joinpath(datadir, "tccon_H2O.jld2"), ν_grid)
 CO₂ = get_molecule_info("CO2", joinpath(datadir, "hit20_12CO2.jld2"), ν_grid)
-HDO = get_molecule_info("HDO", joinpath(datadir, "TCCON_HDO.jld2"), ν_grid)
+HDO = get_molecule_info("HDO", joinpath(datadir, "tccon_HDO.jld2"), ν_grid)
 molecules = [H₂O, CH₄, CO₂, HDO]
 
 ## define the initial guess 
