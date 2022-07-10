@@ -1,6 +1,6 @@
 using Distributed
 using vSmartMOM, OrderedCollections, Dates, Statistics
-#addprocs(10)
+addprocs(10)
 @everywhere using SpectralFits
 @sync @everywhere fit_spectra 
 
