@@ -97,5 +97,5 @@ end
 
 out = pmap(x->retrieve(x[1], x[2], inversion_setup),params) 
 println("done with all data. saving")
-@save "ch4_hit20_error.JLD2" out p T
+@save "ch4_TCCON_error.JLD2" out p T
 
