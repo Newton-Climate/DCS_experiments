@@ -63,7 +63,7 @@ pathlength = 195017.0 # round trip path length in meters DCS
     spec_true = setup_molecules(molecules_08)
 
     # true state 
-            x_true = OrderedDict{String, Union{FT,Vector{FT}}}("H2O" => 0.01 * vcd,
+            x_true = StateVector("H2O" => 0.01 * vcd,
                                           "CH4" => 2000e-9 * vcd,
                                           "pressure" => p,
                                           "temperature" => T,
@@ -79,7 +79,7 @@ pathlength = 195017.0 # round trip path length in meters DCS
             measurement.intensity = τ #.+ ϵ
 
     # initial guess 
-           xₐ = OrderedDict{String, Union{FT, Vector{FT}}}("H2O" => 0.01 * vcd,
+           xₐ = StateVector("H2O" => 0.01 * vcd,
                                                          "CH4" => 2000e-9 * vcd,
                   "pressure" => measurement.pressure,
                   "temperature" => measurement.temperature,
