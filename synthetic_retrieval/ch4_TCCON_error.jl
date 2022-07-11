@@ -97,5 +97,24 @@ end
 
 out = pmap(x->retrieve(x[1], x[2], inversion_setup),params) 
 println("done with all data. saving")
-@save "ch4_TCCON_error.JLD2" out p T
+pathlength = 195017.0 # round trip path length in cm DCSA
+(np, nT) = size(out)
 
+# load the column amounts 
+ch4_col = [out[i,j].x["CH4"] for i=1:np,j=1:nT]    
+h2o_col = [out[i,j].x["H2O"] for i=1:np,j=1:nT]
+
+# pressure and temperature 
+p_true = p
+T_true = T
+p = [out[i,j].x["pressure"] for i=1:np,j=1:nT]    
+T = [out[i,j].x["temperature"] for i=1:np,j=1:nT]
+    
+# calculate vcd
+vcd = SpectralFits.calc_vcd.(p, T, pathlength)
+
+# VMR of gases 
+ch4 = 1e9*ch4_col ./ (vcd - h2o_col)    
+h2o = 1e2*h2o_col ./ (vcd - h2o_col)
+println("Saving data")    
+@save "ch4_TCCON_results.jld2" p p_true T T_true ch4_col ch4 h2o_col h2o vcd 
