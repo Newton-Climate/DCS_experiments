@@ -76,7 +76,7 @@ pathlength = 195017.0 # round trip path length in meters DCS
             τ = f(x_true)
             σ = 0.005610022028250306 / sqrt(10)
             ϵ = randn(length(τ)) * σ
-            measurement.intensity = τ .+ ϵ
+            measurement.intensity = τ #.+ ϵ
 
     # initial guess 
            xₐ = StateVector("H2O" => 0.01 * vcd,
