@@ -30,8 +30,8 @@ end
 @everywhere begin
     datadir = "/net/fluo/data1/data/NIST/spectra/"
     CO₂_oco = get_molecule_info("CO2", joinpath(datadir, "OCO_12CO2_weakband.jld2"), ν_grid)
-    CO₂ = get_molecule_info("CO2", joinpath(datadir, "tccon_12CO2.jld2"), ν_grid)
-    H₂O = get_molecule_info("H2O", joinpath(datadir, "tccon_H2O.jld2"), ν_grid)
+        CO₂ = get_molecule_info("CO2", joinpath(datadir, "tccon_2020.par"), 2, 1, ν_grid)
+    H₂O = get_molecule_info("H2O", joinpath(datadir, "tccon_2020.par"), 1, 1, ν_grid)
     molecules_oco = [H₂O, CO₂_oco]
 molecules = [H₂O, CO₂]
 end
@@ -80,7 +80,7 @@ pathlength = 195017.0 # round trip path length in meters DCS
 
     # initial guess 
            xₐ = StateVector("H2O" => 0.01 * vcd,
-                                                         "CO2" => 400e-6 * vcd,
+                                                         "CO2" => 380e-6 * vcd,
                   "pressure" => measurement.pressure,
                   "temperature" => measurement.temperature,
                   "shape_parameters" => [maximum(measurement.intensity); zeros(inversion_setup["poly_degree"]-1)])
