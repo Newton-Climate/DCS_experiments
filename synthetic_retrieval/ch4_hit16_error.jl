@@ -29,9 +29,9 @@ end
  # Get the HiTran parameters
 @everywhere begin
     datadir = "/net/fluo/data1/data/NIST/spectra/"
-    CH₄_08 = get_molecule_info("CH4", joinpath(datadir, "hit08_12CH4.jld2"), ν_grid)
-    CH₄ = get_molecule_info("CH4", joinpath(datadir, "hit16_12CH4.jld2"), ν_grid)
-    H₂O = get_molecule_info("H2O", joinpath(datadir, "tccon_H2O.jld2"), ν_grid)
+    CH₄_08 = get_molecule_info("CH4", joinpath(datadir, "hit08_12CH4.jld2"), 6, 1, ν_grid)
+    CH₄ = get_molecule_info("CH4", joinpath(datadir, "hit16_12CH4.jld2"), 6, 1, ν_grid)
+    H₂O = get_molecule_info("H2O", joinpath(datadir, "tccon_H2O.jld2"), 1, 1, ν_grid)
     molecules_08 = [H₂O, CH₄_08]
 molecules = [H₂O, CH₄]
 end
