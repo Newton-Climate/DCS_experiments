@@ -115,7 +115,7 @@ T = [out[i,j].x["temperature"] for i=1:np,j=1:nT]
 vcd = SpectralFits.calc_vcd.(p, T, pathlength)
 
 # VMR of gases 
-co2 = 1e6*ch4_col ./ (vcd - h2o_col)    
+co2 = 1e6*co2_col ./ (vcd - h2o_col)    
 h2o = 1e2*h2o_col ./ (vcd - h2o_col)
 println("Saving data")    
 @save "co2_TCCON_results.jld2" p p_true T T_true co2_col co2 h2o_col h2o vcd 
