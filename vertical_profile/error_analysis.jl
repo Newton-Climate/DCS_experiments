@@ -1,16 +1,16 @@
 using SpectralFits, JLD2, LinearAlgebra, Plots, LaTeXStrings
-
+include("util.jl")
 @load "CH4_profile.jld2"
 ch4_idealized = result
-
+vcd_idealized = vcd_idealized
 
 @load "CH4_isobar.jld2"
 ch4_isobar = result
-vcd_isobar = vcd
+vcd_isobar = vcd_isobar
 
 @load "CH4_isotherm.jld2"
 ch4_isotherm = result
-vcd_isotherm = vcd
+vcd_isotherm = vcd_isotherm
 
 @load "CO2_profile.jld2"
 co2_idealized = result
@@ -22,11 +22,12 @@ co2_isotherm = result
 co2_isobar = result;
 
 ## define some setup params 
-num_layers = 44;
+num_layers = 35;
 n = num_layers
 h2o_ind = 1:num_layers
 ch4_ind = num_layers+1:2*num_layers
-co2_ind = 2*num_layers+1:3*num_layers
+#co2_ind = 2*num_layers+1:3*num_layers
+co2_ind = ch4_ind;
 
 ## calculate gain matrix
 # CH4
@@ -99,21 +100,39 @@ cK_h2o = (H'*A1_idealized[h2o_ind, h2o_ind])' ./ H
 cK_co2 = (H'*A2_idealized[co2_ind, co2_ind])' ./ H
 cK_ch4 = (H'*A1_idealized[ch4_ind, ch4_ind])' ./ H
 
-p_h2o_ck = plot(cK_h2o, p_idealized, yflip=true, lw=2, color=:blue, legend=:false)
-plot!(unity, p_idealized, label=:false, color=:black, lw=2, ls=:dot)
-plot!(title=L"H_2O", ylabel="pressure (HPa)")
+
+cK_ch4_isobar = averaging_kernel(ch4_isobar, vcd_isobar, ch4_ind)
+cK_ch4_isotherm = averaging_kernel(ch4_isotherm, vcd_isotherm, ch4_ind)
+
+cK_co2_isobar = averaging_kernel(co2_isobar, vcd_isobar, co2_ind)
+cK_co2_isotherm = averaging_kernel(co2_isotherm, vcd_isotherm, co2_ind)
+
+cK_h2o_isobar = averaging_kernel(co2_isobar, vcd_isobar, h2o_ind)
+cK_h2o_isotherm = averaging_kernel(co2_isotherm, vcd_isotherm, h2o_ind)
+
+## plot 
+p_h2o_ck = plot(cK_h2o, z,  lw=2, color=:blue, label="standard")
+plot!(cK_h2o_isobar, z,  lw=2, color=:red, label="isobaric")
+plot!(cK_h2o_isotherm, z,  lw=2, color=:green, label="isothermal")
+plot!(unity, z, label=:false, color=:black, lw=2, ls=:dot)
+plot!(title=L"H_2O", ylabel="height (meters)")
 
 
-p_ch4_ck = plot(cK_ch4, p_idealized, yflip=true,lw=2, label=:false, color=:red)
-plot!(unity, p_idealized, label=:false, color=:black, lw=2, ls=:dot)
+p_ch4_ck = plot(cK_ch4, z, lw=2, label=:false, color=:blue)
+plot!(cK_ch4_isobar, z,  lw=2, color=:red, label=:false)
+plot!(cK_ch4_isotherm, z,  lw=2, color=:green, label=:false)
+plot!(unity, z, label=:false, color=:black, lw=2, ls=:dot)
 plot!(title=L"CH_4")
 
-p_co2_ck = plot(cK_co2, p_idealized, yflip=true, lw=2, label=:false, color=:green)
-plot!(unity, p_idealized, label=:false, color=:black, lw=2, ls=:dot)
+p_co2_ck = plot(cK_co2, z,  lw=2, label=:false, color=:blue)
+plot!(cK_co2_isobar, z,  lw=2, color=:red, label=:false)
+plot!(cK_co2_isotherm, z,  lw=2, color=:green, label=:false)
+plot!(unity, z, label=:false, color=:black, lw=2, ls=:dot)
 title!(L"CO_2", xlabel="Column averaging kernel")
 
 
 plot(p_h2o_ck, p_co2_ck, p_ch4_ck, layout=(1,3), link=:y)
 plot!(fontfamily="serif-roman", legendfont=font("Computer Modern", 7), xrotation=45)
-savefig("column_averaging_kernal.pdf")
+savefig("column_averaging_kernel.pdf")
+
 

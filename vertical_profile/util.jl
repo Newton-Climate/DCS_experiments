@@ -12,7 +12,7 @@ function DOF(in::AbstractResults, ind)
 end
 
 
-function averaging_kernal(in::AbstractResults, vcd, ind)
+function averaging_kernel(in::AbstractResults, vcd, ind)
 
     # calculate gain matrix
     G = calc_gain_matrix(in)
@@ -20,7 +20,8 @@ function averaging_kernal(in::AbstractResults, vcd, ind)
     H = vcd ./ sum(vcd)
     
     A = G * in.K
+    
 
-    cK = (H'*A[ind, ind])' ./ H
-    return cK
+    cK = (H'*A[ind, ind]) ./ H'
+    return cK'
 end
