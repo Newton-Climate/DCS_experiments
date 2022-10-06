@@ -65,9 +65,11 @@ def load_data(datafile):
 
     return out
 
-hit16 = load_data('heatmaps/ch4_hit16_results.jld2')
-hit20 = load_data('heatmaps/ch4_hit20_results.jld2')
-TCCON = load_data('heatmaps/ch4_TCCON_results.jld2')
+datadir = '/net/fluo/data1/data/NIST/DCS_A/'
+
+hit16 = load_data(datadir+'heatmaps/ch4_hit16_results.jld2')
+hit20 = load_data(datadir+'heatmaps/ch4_hit20_results.jld2')
+TCCON = load_data(datadir+'heatmaps/ch4_TCCON_results.jld2')
 
 var = ['dch4', 'dch4', 'dch4', 'dp', 'dp', 'dp','dT', 'dT', 'dT']
 vmax = [250, 250, 250, 15, 15, 15, 0.5, 0.5, 0.5]
@@ -152,7 +154,7 @@ for i in range(9):
 
 plt.subplots_adjust(wspace=0.005, hspace=0)
 plt.tight_layout()
-fig.savefig('figs/heatmap_ch4.pdf')
+fig.savefig(datadir+'figs/heatmap_ch4.pdf')
 print('\tSAVED: figs/heatmap_ch4.pdf')
 
 
