@@ -57,11 +57,12 @@ p(z) = 1e3*exp.(-z/8.5e3)
 
 # save custom p and T
 measurement.pressure = p.(z)
-measurement.temperature = T.(280, z)
+measurement.temperature = T.(270, z)
 
 # calculate dry vcd 
 δz = 1e2*mean(diff(z)) # layer thickness in cm
 vcd = SpectralFits.calc_vcd.(measurement.pressure, measurement.temperature, δz, h2o)
+measurement.vcd = vcd;
 
 # true state 
 x_true = OrderedDict{String, Vector{Float64}}("H2O" => h2o .* vcd,
@@ -126,4 +127,8 @@ error = rmsd(1e6*co2, co2_idealized)
 @show error
 @show residual 
 
+true_degrees = DOF_at_prior(f, x_true, measurement.σ², result, co2_ind)
+@show true_degrees
+prior_degrees = DOF_at_prior(f, xₐ, measurement.σ², result, co2_ind)
+@show prior_degrees
 

@@ -54,10 +54,12 @@ p(z) = 1e3*exp.(-z/8.5e3)
 δz = 1e2*mean(diff(z)) # layer thickness in cm
 
 # save custom p and T
-measurement.pressure = 750.0*ones(n)
-measurement.temperature = T.(280, z)
-vcd = SpectralFits.calc_vcd.(measurement.pressure, measurement.temperature, δz, h2o)
+vcd = SpectralFits.calc_vcd.(p.(z), T.(270,z), δz, h2o)
 measurement.vcd = vcd
+H = vcd ./ sum(vcd)
+measurement.pressure = (H' * p.(z)) * ones(n)
+measurement.temperature = T.(270, z)
+
 
 # true state 
 x_true = OrderedDict{String, Vector{Float64}}("H2O" => h2o .* vcd,
@@ -72,7 +74,7 @@ xₐ = OrderedDict{String, Vector{Float64}}("H2O" => 0.005 * vcd,
 ## define a priori 
 a = ones(n)
 σ = OrderedDict{String, Vector{Float64}}("H2O" => 0.01*vcd,
-                                                         "CO2" => 100e-6 * vcd,
+                                                         "CO2" => 80e-6 * vcd,
                   "shape_parameters" => ones(inversion_setup["poly_degree"]))
 
 ## save in setup dictionary 
@@ -127,4 +129,7 @@ residual = rmsd(result.model, result.measurement)
 error = rmsd(1e6co2, co2_isobar)
 @show error
 @show residual 
-
+prior_degrees = DOF_at_prior(f, xₐ, measurement.σ², result, co2_ind)
+@show prior_degrees
+true_degrees = DOF_at_prior(f, x_true, measurement.σ², result, co2_ind)
+@show true_degrees
