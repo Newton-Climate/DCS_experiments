@@ -7,6 +7,7 @@ using Dates, StatsBase, Revise
 using Plots, JLD2
 end
 
+on_fluo = false
 # define the reetrieval parameters
 @everywhere inversion_setup = Dict{String,Any}(
     "poly_degree" => 2,
@@ -22,19 +23,29 @@ end
 # Just defining the spectral windows for each species
 @everywhere ν_grid = 6050:0.005:6120
 # Read the DCS DAta 
-@everywhere data = read_DCS_data("/net/fluo/data1/data/NIST/DCS_A/20160921.h5")
+if on_fluo
+    datadir = "/net/fluo/data1/data/NIST/DCS_A/"
+else
+    datadir = "../../retrieval/julia/data"
+end
+
+@everywhere data = read_DCS_data(joinpath(datadir, "20160921.h5"))
 @everywhere measurement =  get_measurement(1, data, ν_grid[1], ν_grid[end]) # get 1 measurement 
 
 
- # Get the HiTran parameters
+# Get the HiTran parameters
+    if on_fluo
+        datadir = "/net/fluo/data1/data/NIST/spectra/"
+    end
+
 @everywhere begin
-    datadir = "/net/fluo/data1/data/NIST/spectra/"
     CH₄ = get_molecule_info("CH4", joinpath(datadir, "hit08_12CH4.par"), 6, 1, ν_grid)
+    CH₄_pert = CH₄
     H₂O = get_molecule_info("H2O", joinpath(datadir, "tccon_2020.par"), 1, 1, ν_grid)
     molecules = [H₂O, CH₄]
 
-    CH₄.hitran_table.n_air = 1.1*CH₄.hitran_table.n_air
-molecules_pert = [H₂O, CH₄]
+CH₄_pert.model.hitran.n_air .*= 1.1
+molecules_pert = [H₂O, CH₄_pert]
 end
 
 
@@ -120,3 +131,4 @@ ch4 = 1e9*ch4_col ./ (vcd - h2o_col)
 h2o = 1e2*h2o_col ./ (vcd - h2o_col)
 println("Saving data")    
 @save "ch4_broadening_results.jld2" p p_true T T_true ch4_col ch4 h2o_col h2o vcd 
+CH₄
