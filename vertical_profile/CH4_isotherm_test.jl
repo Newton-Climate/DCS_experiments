@@ -57,13 +57,16 @@ z = collect(range(0, stop=10000, length=n)) # height
 T(T₀, z) = T₀ .- 6.5e-3 .* z
 p(z) = 1e3*exp.(-z/8.5e3)
 
-# save custom p and T
-measurement.pressure = p.(z)
-measurement.temperature = 270.0*ones(n)
+
 #vcd = SpectralFits.make_vcd_profile(measurement.pressure, measurement.temperature, vmr_H₂O=h2o)
 δz = 1e2*mean(diff(z)) # layer thickness in cm
-vcd = SpectralFits.calc_vcd.(measurement.pressure, measurement.temperature, δz, h2o)
+vcd = SpectralFits.calc_vcd.(p.(z), T.(270, z), δz, h2o)
 measurement.vcd = vcd;
+
+# save custom p and T
+H = vcd ./ sum(vcd)
+measurement.pressure = p.(z)
+measurement.temperature = H' * T.(270, z) *ones(n)
 
 # true state 
 x_true = OrderedDict{String, Vector{Float64}}("H2O" => h2o .* vcd,
@@ -133,3 +136,9 @@ error = rmsd(1e9*ch4, ch4_isotherm)
 @show degrees 
 @show error
 @show residual 
+
+
+true_degrees = DOF_at_prior(f, x_true, measurement.σ², result, co2_ind)
+@show true_degrees
+prior_degrees = DOF_at_prior(f, xₐ, measurement.σ², result, co2_ind)
+@show prior_degrees

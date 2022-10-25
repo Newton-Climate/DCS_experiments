@@ -1,6 +1,6 @@
 using SpectralFits, vSmartMOM, Dates, DiffResults, ForwardDiff, JLD2, Revise, StatsBase
 
-on_fluo = true; # ar e we on Fluo server?
+on_fluo = true; ; # ar e we on Fluo server?
 
 ## define spectral window
 ν_grid = 6180:0.002:6260.0
@@ -51,17 +51,20 @@ ch4 = collect(range(2000e-9, stop=1800e-9, length=n))
 h2o = collect(range(0.005, stop=0.001, length=n))
 
 # define p(z) and T(z) functions
-z = collect(range(0, stop=10000, length=n)) # height 
+z = collect(range(0, stop=10000, length=n)) # height
+δz = 1e2*mean(diff(z)) # layer thickness in cm
 T(T₀, z) = T₀ .- 6.5e-3 .* z
 p(z) = 1e3*exp.(-z/8.5e3)
 
 # save custom p and T
-measurement.pressure = p.(z)
-measurement.temperature = 270.0*ones(n)
-#vcd = SpectralFits.make_vcd_profile(measurement.pressure, measurement.temperature, vmr_H₂O=h2o)
-δz = 1e2*mean(diff(z)) # layer thickness in cm
-vcd = SpectralFits.calc_vcd.(measurement.pressure, measurement.temperature, δz, h2o)
+vcd = SpectralFits.calc_vcd.(p.(z), T.(280, z), δz, h2o)
 measurement.vcd = vcd;
+H = vcd ./ sum(vcd)
+measurement.pressure = p.(z)
+measurement.temperature = (H' * T.(280, z)) * ones(n);
+#vcd = SpectralFits.make_vcd_profile(measurement.pressure, measurement.temperature, vmr_H₂O=h2o)
+
+
 
 # true state 
 x_true = OrderedDict{String, Vector{Float64}}("H2O" => h2o .* vcd,
@@ -69,7 +72,7 @@ x_true = OrderedDict{String, Vector{Float64}}("H2O" => h2o .* vcd,
                                               "shape_parameters" => [maximum(measurement.intensity); zeros(inversion_setup["poly_degree"]-1)])
 
 #              # a priori state vector
-xₐ = OrderedDict{String, Vector{Float64}}("H2O" => 0.003 * vcd,
+xₐ = OrderedDict{String, Vector{Float64}}("H2O" => 0.005 * vcd,
                                                          "CO2" => 405e-6 * vcd,
                                           "shape_parameters" => [maximum(measurement.intensity); zeros(inversion_setup["poly_degree"]-1)])
 
@@ -127,3 +130,7 @@ error = rmsd(1e6co2, co2_isotherm)
 @show error
 @show residual 
 
+true_degrees = DOF_at_prior(f, x_true, measurement.σ², result, co2_ind)
+@show true_degrees
+prior_degrees = DOF_at_prior(f, xₐ, measurement.σ², result, co2_ind)
+@show prior_degrees

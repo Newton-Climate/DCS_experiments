@@ -66,10 +66,11 @@ def load_data(datafile):
     return out
 
 
-## extract data 
-hit16 = load_data('heatmaps/co2_hit16_results.jld2')
-hit20 = load_data('heatmaps/co2_hit20_results.jld2')
-TCCON = load_data('heatmaps/co2_TCCON_results.jld2')
+## extract data
+basedir = '/net/fluo/data1/data/NIST/DCS_A/'
+hit16 = load_data(basedir+'heatmaps/co2_hit16_results.jld2')
+hit20 = load_data(basedir+'heatmaps/co2_hit20_results.jld2')
+TCCON = load_data(basedir+'heatmaps/co2_TCCON_results.jld2')
 
 var = ['d_co2', 'd_co2', 'd_co2', 'dp', 'dp', 'dp','dT', 'dT', 'dT']
 vmax = [15, 15, 15, 15, 15, 15, 1, 1, 1]
@@ -129,5 +130,5 @@ for i in range(9):
 
 plt.subplots_adjust(wspace=0.005, hspace=0)
 plt.tight_layout()
-fig.savefig('figs/heatmap_co2.pdf')
+fig.savefig(basedir+'figs/heatmap_co2.pdf')
 print('\tSAVED: figs/heatmap_co2.pdf')
