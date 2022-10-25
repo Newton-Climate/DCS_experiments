@@ -18,7 +18,8 @@ end
     "architecture" => CPU(),
 "averaging_window" => Minute(15),
     "verbose_mode" => true,
-"fit_column" => true)
+"fit_column" => true,
+"linear" => false)
 
 # Just defining the spectral windows for each species
 @everywhere ν_grid = 6050:0.005:6120
@@ -34,7 +35,7 @@ end
 
 
 # Get the HiTran parameters
-@@everywhere if on_fluo
+@everywhere if on_fluo
         spec_dir = "/net/fluo/data1/data/NIST/spectra/"
     end
 
