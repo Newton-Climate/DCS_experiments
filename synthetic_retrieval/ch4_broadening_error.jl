@@ -7,7 +7,7 @@ using Dates, StatsBase, Revise
 using Plots, JLD2
 end
 
-on_fluo = false
+@everywhere on_fluo = true
 # define the reetrieval parameters
 @everywhere inversion_setup = Dict{String,Any}(
     "poly_degree" => 2,
@@ -23,7 +23,7 @@ on_fluo = false
 # Just defining the spectral windows for each species
 @everywhere ν_grid = 6050:0.005:6120
 # Read the DCS DAta 
-if on_fluo
+@everywhere if on_fluo
     datadir = "/net/fluo/data1/data/NIST/DCS_A/"
 else
     datadir = "../../retrieval/julia/data"
@@ -40,7 +40,7 @@ end
 
 @everywhere begin
     CH₄ = get_molecule_info("CH4", joinpath(datadir, "hit08_12CH4.par"), 6, 1, ν_grid)
-    CH₄_pert = CH₄
+    CH₄_pert = get_molecule_info("CH4", joinpath(datadir, "hit08_12CH4.par"), 6, 1, ν_grid)
     H₂O = get_molecule_info("H2O", joinpath(datadir, "tccon_2020.par"), 1, 1, ν_grid)
     molecules = [H₂O, CH₄]
 
