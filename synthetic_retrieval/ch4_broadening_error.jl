@@ -40,9 +40,9 @@ end
     end
 
 @everywhere begin
-    CH₄ = get_molecule_info("CH4", joinpath(spec_dir, "hit08_12CH4.par"), 6, 1, ν_grid)
-    CH₄_pert = get_molecule_info("CH4", joinpath(spec_dir, "hit08_12CH4.par"), 6, 1, ν_grid)
-    H₂O = get_molecule_info("H2O", joinpath(spec_dir, "tccon_2020.par"), 1, 1, ν_grid)
+    CH₄ = get_molecule_info("CH4", joinpath(spec_dir, "hit08_12CH4.par"), 6, 1, ν_grid, architecture=CPU())
+    CH₄_pert = get_molecule_info("CH4", joinpath(spec_dir, "hit08_12CH4.par"), 6, 1, ν_grid, architecture=CPU())
+    H₂O = get_molecule_info("H2O", joinpath(spec_dir, "tccon_2020.par"), 1, 1, ν_grid, architecture=CPU())
     molecules = [H₂O, CH₄]
 
 CH₄_pert.model.hitran.n_air .*= 1.1
