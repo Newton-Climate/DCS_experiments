@@ -1,4 +1,5 @@
 import numpy as np
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
@@ -36,9 +37,13 @@ c = {'pic' : 'black', ### CHANGED TO PIC FROM PICARRO
     'oco' : cp[5]}
 
 markersize = 1
-
+on_fluo = True
 # on Fluo
-datadir = '/net/fluo/data1/data/NIST/DCS_A/'
+if on_fluo:
+    datadir = '/net/fluo/data1/data/NIST/DCS_A/'
+else:
+    datadir = os.chdir('../')
+    datadir = os.getcwd() + '/'
 
 ## read the data
 #retrievals 
@@ -49,7 +54,7 @@ tccon = read_data(datadir+'timeseries/data/tccon_results.jld2')
 OCO = read_OCO(datadir+'timeseries/data/OCO_results.jld2')
 
 
-ch4_grid = np.arange(start=6050.0, stop=6120, step=(6120 - 6050)/len(hit08['ch4_measurement']))
+ch4_grid = np.arange(start=6050.0, stop=6115, step=(6115 - 6050)/len(hit08['ch4_measurement']))
 co2_grid = np.arange(start=6180.0, stop=6260, step=(6260 - 6180)/len(hit08['co2_measurement']))
 
 
@@ -60,7 +65,7 @@ obs = hit08['ch4_measurement']
 fig1, (f1_ax1, f1_ax2)  = plt.subplots(nrows=2,ncols=1, sharex = False, figsize = (6,7), dpi = 300)
 
 # CH4 spectra
-f1_ax1.plot(ch4_grid, obs, '-', label='measurement', c='black', markersize = 2, linewidth = 0.5)
+f1_ax1.plot(ch4_grid, hit08['ch4_spectra'], '-', label='measurement', c='black', markersize = 2, linewidth = 0.5)
 f1_ax1.set_xlabel(r'cm$^{-1}$')
 f1_ax1.set_ylabel('Intensity')
 f1_ax1.set_title(r'Fit over CH$_4$ window')
@@ -82,8 +87,8 @@ axShallow3 = divider.append_axes("top", size="100%", pad=0.3, sharex=axMain) #to
 linewidth = 0.5#formerly 0.2
 axMain.set_xlabel(r'Wavenumbers (cm$^{-1}$)')
 axShallow2.set_ylabel('Model - Measurement')
-axShallow2.plot(ch4_grid, obs - hit08[key], label='Hitran-16', c=c['hit16'], alpha = 1, markersize = 2, linewidth =linewidth)
-axShallow3.plot(ch4_grid, obs - hit16[key], label='Hitran-08', c=c['hit08'], alpha = 1, markersize = 2, linewidth =linewidth)
+axShallow2.plot(ch4_grid, obs - hit08[key], label='Hitran-16', c=c['hit08'], alpha = 1, markersize = 2, linewidth =linewidth)
+axShallow3.plot(ch4_grid, obs - hit16[key], label='Hitran-08', c=c['hit16'], alpha = 1, markersize = 2, linewidth =linewidth)
 axMain.plot(ch4_grid, obs - hit20[key], label='Hitran-20', c=c['hit20'], alpha = 1, markersize = 2, linewidth =linewidth)
 f1_ax2.set_xlabel(r'cm$^{-1}$')
 
@@ -93,8 +98,8 @@ axShallow3.tick_params(labelbottom=False, axis = 'x', colors = 'white')
 
 offset_label = 0.0025 #6077
 axMain.text(x = 6050, y = (obs-hit08[key]).mean() + offset_label, s = 'Hitran-2020')#, fontsize=10)
-axShallow2.text(x = 6050, y = (obs-hit08[key]).mean() + offset_label, s = 'Hitran-2016')#, fontsize=10)
-axShallow3.text(x = 6050, y = (obs-hit08[key]).mean() + offset_label, s = 'Hitran-2008')#, fontsize=10)
+axShallow2.text(x = 6050, y = (obs-hit08[key]).mean() + offset_label, s = 'Hitran-2008')#, fontsize=10)
+axShallow3.text(x = 6050, y = (obs-hit08[key]).mean() + offset_label, s = 'Hitran-2016')#, fontsize=10)
 
 axShallow2.spines['top'].set_visible(False)
 axShallow3.spines['bottom'].set_visible(False)
@@ -130,11 +135,11 @@ fig1, (f1_ax1, f1_ax2)  = plt.subplots(nrows=2,ncols=1, sharex = False, figsize 
 
 ######### TOP SUBPLOT: CO2 Spectra #########
 
-# CH4 spectra
-f1_ax1.plot(co2_grid, obs, '-', label='measurement', c='black', markersize = 2, linewidth = 0.5)
+# CO2 spectra
+f1_ax1.plot(co2_grid, hit16['co2_spectra'], '-', label='measurement', c='black', markersize = 2, linewidth = 0.5)
 f1_ax1.set_xlabel(r'cm$^{-1}$')
 f1_ax1.set_ylabel('Intensity')
-f1_ax1.set_title(r'Fit over CH$_4$ window')
+f1_ax1.set_title(r'Fit over CO$_2$ window')
 xtickslocs = f1_ax1.get_xticks()
 
 ######### BOTTOM SUBPLOT #########
@@ -153,11 +158,11 @@ axShallow4 = divider.append_axes("top", size="100%", pad=0.3, sharex=axMain) #to
 linewidth = 0.5#formerly 0.2
 axMain.set_xlabel(r'Wavenumbers (cm$^{-1}$)')
 axShallow3.set_ylabel('Model - Measurement')
-axShallow2.plot(co2_grid, obs - hit08[key], label='Hitran-16', c=c['hit16'], alpha = 1, markersize = 2, linewidth =linewidth)
-axShallow3.plot(co2_grid, obs - hit16[key], label='Hitran-08', c=c['hit08'], alpha = 1, markersize = 2, linewidth =linewidth)
-axShallow4.plot(co2_grid, obs - tccon[key], label='TCCON', c=c['tccon'], alpha = 1, markersize = 2, linewidth =linewidth)
+axShallow2.plot(co2_grid, obs - OCO[key], label='OCO', c=c['oco'], alpha = 1, markersize = 2, linewidth =linewidth)
+axShallow3.plot(co2_grid, obs - hit16[key], label='Hitran-16', c=c['hit16'], alpha = 1, markersize = 2, linewidth =linewidth)
+axShallow4.plot(co2_grid, obs - hit20[key], label='hit20', c=c['hit20'], alpha = 1, markersize = 2, linewidth =linewidth)
 
-axMain.plot(co2_grid, obs - hit20[key], label='Hitran-20', c=c['hit20'], alpha = 1, markersize = 2, linewidth =linewidth)
+axMain.plot(co2_grid, obs - tccon[key], label='TCCON', c=c['tccon'], alpha = 1, markersize = 2, linewidth =linewidth)
 f1_ax2.set_xlabel(r'cm$^{-1}$')
 
 # Set labels and ylims and get rid of spines
@@ -166,10 +171,10 @@ axShallow3.tick_params(labelbottom=False, axis = 'x', colors = 'white')
 axShallow4.tick_params(labelbottom=False, axis = 'x', colors = 'white')
 
 offset_label = -0.0035 #6077
-axMain.text(x = 6180, y = (obs-hit08[key]).mean() + offset_label, s = 'Hitran-2020', fontsize=10)
-axShallow2.text(x = 6180, y = offset_label, s = 'Hitran-2016', fontsize=10)
-axShallow3.text(x = 6180, y = offset_label, s = 'Hitran-2008', fontsize=10)
-axShallow4.text(x = 6180, y = offset_label, s = 'TCCON', fontsize=10)
+axMain.text(x = 6180, y = (obs-hit08[key]).mean() + offset_label, s = 'TCCON', fontsize=10)
+axShallow2.text(x = 6180, y = offset_label, s = 'OCO', fontsize=10)
+axShallow3.text(x = 6180, y = offset_label, s = 'Hitran-2016', fontsize=10)
+axShallow4.text(x = 6180, y = offset_label, s = 'Hitran-2020', fontsize=10)
 
 
 axShallow2.spines['top'].set_visible(False)
