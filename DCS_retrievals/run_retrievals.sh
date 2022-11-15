@@ -1,4 +1,4 @@
-#!/bin/bash/
+#!/bin/bash
 
 nohup julia run_hit08.jl > hit08.out &
 nohup julia run_hit16.jl > hit16.out &
