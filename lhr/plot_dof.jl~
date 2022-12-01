@@ -1,0 +1,19 @@
+using SpectralFits, JLD2
+
+snr_vec = collect(1500:250:3000)
+data = Array{InversionResults}(undef, (4, length(snr)))
+
+@load "CO2_200GHz_results.jld2"
+data[1,:] = results
+
+@load "CO2_150GHz_results.jld2"
+data[2,:] = results
+
+
+@load "CO2_100GHz_results.jld2"
+data[3,:] = results
+
+@load "CO2_50GHz_results.jld2"
+data[4,:] = results
+
+
