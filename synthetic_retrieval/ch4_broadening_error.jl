@@ -1,13 +1,13 @@
 using Distributed
 addprocs(15)
 @everywhere begin
-using SpectralFits
+using SpectralFits, DistributedData
 using vSmartMOM
 using Dates, StatsBase, Revise
-using Plots, JLD2
+using Plots, JLD2, LinearAlgebra
 end
 
-@everywhere on_fluo = true
+on_fluo = true 
 # define the reetrieval parameters
 @everywhere inversion_setup = Dict{String,Any}(
     "poly_degree" => 2,
@@ -24,40 +24,39 @@ end
 # Just defining the spectral windows for each species
 @everywhere ν_grid = 6050:0.005:6120
 # Read the DCS DAta 
-@everywhere if on_fluo
+if on_fluo
     datadir = "/net/fluo/data1/data/NIST/DCS_A/"
 else
-    datadir = "../../retrieval/julia/data"
+    datadir = "../data/"
 end
 
-@everywhere data = read_DCS_data(joinpath(datadir, "20160921.h5"))
-@everywhere measurement =  get_measurement(1, data, ν_grid[1], ν_grid[end]) # get 1 measurement 
+data = read_DCS_data(joinpath(datadir, "20160921.h5"))
+measurement =  get_measurement(1, data, ν_grid[1], ν_grid[end]) # get 1 measurement 
 
 
 # Get the HiTran parameters
-@everywhere if on_fluo
-        spec_dir = "/net/fluo/data1/data/NIST/spectra/"
-    end
+spec_dir = on_fluo ? "/net/fluo/data1/data/NIST/spectra/" : "../spectra/"
 
-@everywhere begin
+
     CH₄ = get_molecule_info("CH4", joinpath(spec_dir, "hit08_12CH4.par"), 6, 1, ν_grid, architecture=CPU())
     CH₄_pert = get_molecule_info("CH4", joinpath(spec_dir, "hit08_12CH4.par"), 6, 1, ν_grid, architecture=CPU())
     H₂O = get_molecule_info("H2O", joinpath(spec_dir, "tccon_2020.par"), 1, 1, ν_grid, architecture=CPU())
-    molecules = [H₂O, CH₄]
+spec_true = setup_molecules([H₂O, CH₄])
 
-CH₄_pert.model.hitran.n_air .*= 1.1
-molecules_pert = [H₂O, CH₄_pert]
-end
+CH₄_pert.model.hitran.n_air .*= 1.05
+spec1 = setup_molecules([H₂O, CH₄_pert])
 
 
-p_guess, T_guess = 1000.0, 300.0
+
+p_guess, T_guess = 500.0, 250.0
 pathlength = 195017.0
 measurement.vcd = SpectralFits.calc_vcd(p_guess, T_guess, pathlength) # calc v=the vcd given specified p and TDCSA
 
 # the true p and T for computing psudo-measurements 
 p = 400.0:20.0:1000.0
 T = 200.0:3.0:300.0
-
+n = length(measurement.grid)
+inversion_setup["obs_covariance"] = 1.1*I(n)
 
 # create the array that stores p and T for the maping 
 params = Array{Tuple{Float64, Float64}}(undef, (length(p), length(T)))
@@ -68,12 +67,15 @@ for i in eachindex(p)
 end
 
 # Define a function to do the synthetic retrieval
-@everywhere function retrieve(p, T, inversion_setup)
+@everywhere function retrieve(p, T, inversion_setup, measurement, spectra, spec_pert)
 
             println("T=",T, ", p=", p)
 pathlength = 195017.0 # round trip path length in meters DCS
             vcd = SpectralFits.calc_vcd(p, T, pathlength)
-    spec_true = setup_molecules(molecules)
+#	    fetch(get_from(1, :spec_true))
+#	    fetch(get_from(1, :spec1))
+
+
 
     # true state 
             x_true = StateVector("H2O" => 0.01 * vcd,
@@ -85,21 +87,21 @@ pathlength = 195017.0 # round trip path length in meters DCS
 
 
 
-            f = generate_forward_model(x_true, measurement, spec_true, inversion_setup);
+            f = generate_forward_model(x_true, measurement, spectra, inversion_setup);
             τ = f(x_true)
             σ = 0.005610022028250306 / sqrt(10)
             ϵ = randn(length(τ)) * σ
             measurement.intensity = τ #.+ ϵ
 
     # initial guess 
-           xₐ = StateVector("H2O" => 0.01 * vcd,
-                                                         "CH4" => 2000e-9 * vcd,
+           xₐ = StateVector("H2O" => 0.01 * measurement.vcd,
+                                                         "CH4" => 2000e-9 * measurement.vcd,
                   "pressure" => measurement.pressure,
                   "temperature" => measurement.temperature,
                   "shape_parameters" => [maximum(measurement.intensity); zeros(inversion_setup["poly_degree"]-1)])
  
-            spec1 = setup_molecules(molecules_pert)
-            f1 = generate_forward_model(xₐ, measurement, spec1, inversion_setup);
+
+            f1 = generate_forward_model(xₐ, measurement, spec_pert, inversion_setup);
 out = nonlinear_inversion(f1, xₐ, measurement, spec1, inversion_setup)
             println("done")
 
@@ -108,7 +110,7 @@ out = nonlinear_inversion(f1, xₐ, measurement, spec1, inversion_setup)
 end
 
 
-out = pmap(x->retrieve(x[1], x[2], inversion_setup),params)
+out = pmap(x->retrieve(x[1], x[2], inversion_setup, measurement, spec_true, spec1),params)
 
 println("done with all data. saving")
 pathlength = 195017.0 # round trip path length in cm DCSA
