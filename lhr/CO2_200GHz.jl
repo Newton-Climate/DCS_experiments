@@ -1,0 +1,130 @@
+using SpectralFits, vSmartMOM, Dates, DiffResults, ForwardDiff, JLD2, Revise, StatsBase
+using LaTeXStrings, Random
+include("util.jl")
+
+on_fluo = false; # are we o Fluo Server?
+Random.seed!(1)
+
+## define spectral window
+ν_range = [1570.75,  1572.75]
+ν_range = reverse!(1e7 ./ ν_range)
+δν = 200e6 / SpectralFits.c
+ν_grid = ν_range[1]-1:0.002:ν_range[end]+1
+
+
+# directory to line-lists or lookup tables
+if on_fluo
+    datadir = "/net/fluo/data1/data/NIST/DCS_A/"
+    else
+    datadir = "../../retrieval/julia/data"
+end
+
+
+## get a measurement struct 
+data = read_DCS_data(joinpath(datadir, "20160921.h5"))
+data = take_time_average!(data, δt=Minute(15))
+measurement = get_measurement(10, data, ν_grid[1], ν_grid[end])
+measurement.grid = collect(ν_range[1]:δν:ν_range[end])
+
+## some params to customize 
+inversion_setup = Dict{String,Any}(
+    "poly_degree" => 2,
+    "fit_pressure" => false,
+    "fit_temperature" => false,
+"verbose_mode" => true,
+    "architecture" => CPU(),
+    "γ" => 100.0,
+    "linear" => false,
+"fit_column" => true)
+
+## get molecular data
+if on_fluo
+    datadir = "/net/fluo/data1/data/NIST/spectra/"
+end
+
+#CH₄ = get_molecule_info("CH4", joinpath(datadir, "hit20_12CH4.jld2"), ν_grid)
+#H₂O = get_molecule_info("H2O", joinpath(datadir, "hit20_H2O.jld2"), ν_grid)
+#CO₂ = get_molecule_info("CO2", joinpath(datadir, "hit20_12CO2.jld2"), ν_grid)
+CO₂ = get_molecule_info("CO2", joinpath(datadir, "hit20_12CO2.jld2"), ν_grid)
+
+# store molecules and models in dictionary
+molecules = [CO₂]
+spec = setup_molecules(molecules)
+
+## customize the atmospheric profile
+# species concentrations profile
+snr = 1500.0 # Instrument SNR
+n = 30 # number of layers
+co2 = collect(range(410e-6, stop=400e-6, length=n))
+ch4 = collect(range(2000e-9, stop=1800e-9, length=n))
+h2o = collect(range(0.005, stop=0.001, length=n))
+
+# define p(z) and T(z) functions
+#z = height_coords.(0:n-1)
+z = collect(range(0, stop=10000, length=n)) # height 
+T(T₀, z) = T₀ .- 6.5e-3 .* z
+p(z) = 1e3*exp.(-z/8.5e3)
+
+# save custom p and T
+measurement.pressure = p.(z)
+measurement.temperature = T.(288, z)
+#measurement.temperature = temperature_profile(288, z)
+
+# calculate dry vcd 
+δz = 1e2*mean(diff(z)) # layer thickness in cm
+vcd = SpectralFits.calc_vcd.(measurement.pressure, measurement.temperature, δz, h2o)
+#vcd = SpectralFits.make_vcd_profile(measurement.pressure, measurement.temperature, vmr_H₂O=h2o)
+measurement.vcd = vcd;
+
+# true state 
+x_true = OrderedDict{String, Vector{Float64}}("CO2" => co2 .* vcd,
+                                              "shape_parameters" => [maximum(measurement.intensity); zeros(inversion_setup["poly_degree"]-1)])
+
+#              # a priori state vector
+xₐ = OrderedDict{String, Vector{Float64}}(#"H2O" => 0.005 * vcd,
+                                                         "CO2" => 405e-6 * vcd,
+                                          "shape_parameters" => [maximum(measurement.intensity); zeros(inversion_setup["poly_degree"]-1)])
+
+## define a priori 
+a = ones(n)
+σ = OrderedDict{String, Vector{Float64}}(#"H2O" => 0.007*vcd,
+                                                         "CO2" => 25e-6 * vcd,
+                  "shape_parameters" => ones(inversion_setup["poly_degree"]))
+
+## save in setup dictionary 
+inversion_setup["σ"] = σ
+
+### define a customized Sₐ⁻¹
+# Number of gases:
+nGases = 1
+# Correlation length scale (in pressure) for the n Gases:
+pcorr = [50.0]
+# Call custom make_prior_error function
+inversion_setup["Sₐ⁻¹"] = make_prior_error(σ, nGases, measurement.pressure, pcorr)
+
+
+
+# generate synthetic data 
+f = generate_profile_model(x_true, measurement, spec, inversion_setup);
+@time out = f(x_true)
+
+# save synthetic measurement and noise 
+signal = mean(out)
+
+snr_vec = collect(1500:250:3000)
+result = Array{InversionResults}(undef, size(snr_vec))
+
+for (i, snr) in enumerate(snr_vec)
+σ² = (signal/snr)^2
+measurement.σ² = σ²
+#ϵ = (sqrt(σ²) .* randn(length(out))) ./ out
+ϵ = sqrt(σ²) .* randn(length(out))
+measurement.intensity = out .+ ϵ
+
+## retrieval
+    result[i] = SpectralFits.adaptive_inversion(f, xₐ, measurement, spec, inversion_setup)
+end
+
+
+
+@save "CO2_200GHz_results.jld2" result vcd 
