@@ -1,5 +1,5 @@
 using Distributed
-addprocs(15)
+addprocs(5)
 @everywhere begin
 using SpectralFits
 using vSmartMOM
