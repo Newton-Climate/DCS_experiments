@@ -12,12 +12,11 @@ end
     "poly_degree" => 40,
     "fit_pressure" => true,
     "fit_temperature" => true,
-    "use_OCO" => false,
-    "use_TCCON" => false,
+    "linear" => false,
     "architecture" => CPU(),
-"averaging_window" => Minute(15),
-    "verbose_mode" => true,
-"fit_column" => true)
+    "averaging_window" => Minute(15),
+        "verbose_mode" => true,
+	"fit_column" => true)
 
 # Just defining the spectral windows for each species
 @everywhere ν_grid = 6050:0.005:6120
