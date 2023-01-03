@@ -56,7 +56,7 @@ measurement.vcd = SpectralFits.calc_vcd(p_guess, T_guess, pathlength) # calc v=t
 p = 400.0:20.0:1000.0
 T = 200.0:3.0:300.0
 n = length(measurement.grid)
-inversion_setup["obs_covariance"] = 1.1*I(n)
+inversion_setup["obs_covariance"] = 1.0*I(n)
 
 # create the array that stores p and T for the maping 
 params = Array{Tuple{Float64, Float64}}(undef, (length(p), length(T)))

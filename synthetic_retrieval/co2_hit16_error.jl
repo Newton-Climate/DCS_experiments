@@ -25,6 +25,10 @@ end
 @everywhere measurement =  get_measurement(1, data, ν_grid[1], ν_grid[end]) # get 1 measurement 
 
 
+# make obs covariance matrix have no noise (identity matrix)
+n = length(measurement.grid)
+inversion_setup["obs_covariance"] = 1.0*I(n)
+
  # Get the HiTran parameters
 @everywhere begin
     datadir = "/net/fluo/data1/data/NIST/spectra/"
