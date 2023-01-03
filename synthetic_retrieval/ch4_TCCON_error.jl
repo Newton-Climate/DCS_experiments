@@ -1,7 +1,7 @@
 using Distributed
 addprocs(5)
 @everywhere begin
-using SpectralFits
+using SpectralFits, LinearAlgebra
 using vSmartMOM
 using Dates, StatsBase, Revise
 using Plots, JLD2
