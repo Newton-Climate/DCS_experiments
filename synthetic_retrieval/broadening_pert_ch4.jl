@@ -1,5 +1,5 @@
 using Distributed
-addprocs(15)
+addprocs(5)
 @everywhere begin
 using SpectralFits, DistributedData
 using vSmartMOM
@@ -71,14 +71,14 @@ end
 
             println("T=",T, ", p=", p)
 pathlength = 195017.0 # round trip path length in meters DCS
-            vcd = SpectralFits.calc_vcd(p, T, pathlength)
+            vcd = SpectralFits.calc_vcd(p, T, pathlength, VMR_H₂O=0.005)
 #	    fetch(get_from(1, :spec_true))
 #	    fetch(get_from(1, :spec1))
 
 
 
     # true state 
-            x_true = StateVector("H2O" => 0.01 * vcd,
+            x_true = StateVector("H2O" => 0.005 * vcd,
                                           "CH4" => 2000e-9 * vcd,
                                           "pressure" => p,
                                           "temperature" => T,
@@ -94,7 +94,7 @@ pathlength = 195017.0 # round trip path length in meters DCS
             measurement.intensity = τ #.+ ϵ
 
     # initial guess 
-           xₐ = StateVector("H2O" => 0.01 * measurement.vcd,
+           xₐ = StateVector("H2O" => 0.005 * measurement.vcd,
                                                          "CH4" => 2000e-9 * measurement.vcd,
                   "pressure" => measurement.pressure,
                   "temperature" => measurement.temperature,

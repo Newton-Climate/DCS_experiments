@@ -61,11 +61,11 @@ end
 
             println("T=",T, ", p=", p)
 pathlength = 195017.0 # round trip path length in meters DCS
-            vcd = SpectralFits.calc_vcd(p, T, pathlength)
+            vcd = SpectralFits.calc_vcd(p, T, pathlength, VMR_H₂O=0.005)
     spec_true = setup_molecules(molecules_oco)
 
     # true state 
-            x_true = StateVector("H2O" => 0.01 * vcd,
+            x_true = StateVector("H2O" => 0.005 * vcd,
                                           "CO2" => 400e-6 * vcd,
                                           "pressure" => p,
                                           "temperature" => T,
@@ -81,7 +81,7 @@ pathlength = 195017.0 # round trip path length in meters DCS
             measurement.intensity = τ #.+ ϵ
 
     # initial guess 
-           xₐ = StateVector("H2O" => 0.01 * vcd,
+           xₐ = StateVector("H2O" => 0.005 * vcd,
                                                          "CO2" => 380e-6 * vcd,
                   "pressure" => measurement.pressure,
                   "temperature" => measurement.temperature,
