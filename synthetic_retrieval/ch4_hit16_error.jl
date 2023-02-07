@@ -1,5 +1,5 @@
 using Distributed
-addprocs(5)
+#addprocs(5)
 @everywhere begin
 using SpectralFits, LinearAlgebra
 using vSmartMOM
@@ -63,7 +63,7 @@ end
 
             println("T=",T, ", p=", p)
 pathlength = 195017.0 # round trip path length in meters DCS
-            vcd = SpectralFits.calc_vcd(p, T, pathlength, VMR_H₂O=0.005)
+            vcd = SpectralFits.calc_vcd(p, T, pathlength, 0.005)
     spec_true = setup_molecules(molecules_08)
 
     # true state 

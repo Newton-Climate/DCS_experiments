@@ -61,7 +61,7 @@ end
 
             println("T=",T, ", p=", p)
 pathlength = 195017.0 # round trip path length in meters DCS
-            vcd = SpectralFits.calc_vcd(p, T, pathlength, VMR_H₂O=0.005)
+            vcd = SpectralFits.calc_vcd(p, T, pathlength, 0.005)
     spec_true = setup_molecules(molecules_oco)
 
     # true state 

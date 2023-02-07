@@ -42,7 +42,6 @@ end
 p_guess, T_guess = 1000.0, 300.0
 pathlength = 195017.0
 measurement.vcd = SpectralFits.calc_vcd(p_guess, T_guess, pathlength) # calc v=the vcd given specified p and TDCSA
-
 # the true p and T for computing psudo-measurements 
 p = 400.0:20.0:1000.0
 T = 200.0:3.0:300.0
@@ -61,7 +60,7 @@ end
 
             println("T=",T, ", p=", p)
 pathlength = 195017.0 # round trip path length in meters DCS
-            vcd = SpectralFits.calc_vcd(p, T, pathlength, VMR_H₂O=0.005)
+            vcd = SpectralFits.calc_vcd(p, T, pathlength, 0.005)
     spec_true = setup_molecules(molecules_oco)
 
     # true state 

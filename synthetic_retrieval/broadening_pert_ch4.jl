@@ -71,7 +71,7 @@ end
 
             println("T=",T, ", p=", p)
 pathlength = 195017.0 # round trip path length in meters DCS
-            vcd = SpectralFits.calc_vcd(p, T, pathlength, VMR_H₂O=0.005)
+            vcd = SpectralFits.calc_vcd(p, T, pathlength, 0.005)
 #	    fetch(get_from(1, :spec_true))
 #	    fetch(get_from(1, :spec1))
 
