@@ -1,5 +1,5 @@
 using Distributed
-addprocs(5)
+addprocs(10)
 @everywhere begin
 using SpectralFits, LinearAlgebra
 using vSmartMOM
