@@ -40,11 +40,10 @@ spec_dir = on_fluo ? "/net/fluo/data1/data/NIST/spectra/" : "../spectra/"
 
     CH₄ = get_molecule_info("CH4", joinpath(spec_dir, "hit08_12CH4.par"), 6, 1, ν_grid, architecture=CPU())
     CH₄_pert = get_molecule_info("CH4", joinpath(spec_dir, "hit08_12CH4.par"), 6, 1, ν_grid, architecture=CPU())
-    H₂O = get_molecule_info("H2O", joinpath(spec_dir, "tccon_2020.par"), 1, 1, ν_grid, architecture=CPU())
-spec_true = setup_molecules([H₂O, CH₄])
+spec_true = setup_molecules([CH₄])
 
 CH₄_pert.model.hitran.n_air .*= 1.05
-spec1 = setup_molecules([H₂O, CH₄_pert])
+spec1 = setup_molecules([CH₄_pert])
 
 
 
@@ -78,8 +77,7 @@ pathlength = 195017.0 # round trip path length in meters DCS
 
 
     # true state 
-            x_true = StateVector("H2O" => 0.01 * vcd,
-                                          "CH4" => 2000e-9 * vcd,
+            x_true = StateVector("CH4" => 2000e-9 * vcd,
                                           "pressure" => p,
                                           "temperature" => T,
                                           "shape_parameters" => [maximum(measurement.intensity); zeros(inversion_setup["poly_degree"]-1)])
@@ -94,8 +92,7 @@ pathlength = 195017.0 # round trip path length in meters DCS
             measurement.intensity = τ #.+ ϵ
 
     # initial guess 
-           xₐ = StateVector("H2O" => 0.01 * measurement.vcd,
-                                                         "CH4" => 2000e-9 * measurement.vcd,
+           xₐ = StateVector("CH4" => 2000e-9 * measurement.vcd,
                   "pressure" => measurement.pressure,
                   "temperature" => measurement.temperature,
                   "shape_parameters" => [maximum(measurement.intensity); zeros(inversion_setup["poly_degree"]-1)])
@@ -118,7 +115,6 @@ pathlength = 195017.0 # round trip path length in cm DCSA
 
 # load the column amounts 
 ch4_col = [out[i,j].x["CH4"] for i=1:np,j=1:nT]    
-h2o_col = [out[i,j].x["H2O"] for i=1:np,j=1:nT]
 
 # pressure and temperature 
 p_true = p
@@ -130,8 +126,7 @@ T = [out[i,j].x["temperature"] for i=1:np,j=1:nT]
 vcd = SpectralFits.calc_vcd.(p, T, pathlength)
 
 # VMR of gases 
-ch4 = 1e9*ch4_col ./ (vcd - h2o_col)    
-h2o = 1e2*h2o_col ./ (vcd - h2o_col)
+ch4 = 1e9*ch4_col ./ (vcd)
 println("Saving data")    
 @save "ch4_broadening_results.jld2" p p_true T T_true ch4_col ch4 h2o_col h2o vcd 
-CH₄
+

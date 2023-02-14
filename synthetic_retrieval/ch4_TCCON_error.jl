@@ -61,7 +61,7 @@ end
             println("T=",T, ", p=", p)
 pathlength = 195017.0 # round trip path length in meters DCS
             vcd = SpectralFits.calc_vcd(p, T, pathlength)
-    #spec_true = setup_molecules(molecules_08)
+    spec_true = setup_molecules(molecules_08)
 
     # true state 
             x_true = StateVector("CH4" => 2000e-9 * vcd,
@@ -79,7 +79,7 @@ pathlength = 195017.0 # round trip path length in meters DCS
                   "temperature" => measurement.temperature,
                   "shape_parameters" => [maximum(measurement.intensity); zeros(inversion_setup["poly_degree"]-1)])
  
-            #spec1 = setup_molecules(molecules)
+            spec1 = setup_molecules(molecules)
             f1 = generate_forward_model(xₐ, measurement, spec1, inversion_setup);
 out = nonlinear_inversion(f1, xₐ, measurement, spec1, inversion_setup)
             println("done")

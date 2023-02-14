@@ -24,6 +24,7 @@ end
 @everywhere data = read_DCS_data("/net/fluo/data1/data/NIST/DCS_A/20160921.h5")
 @everywhere measurement =  get_measurement(1, data, ν_grid[1], ν_grid[end]) # get 1 measurement 
 
+
 # make obs covariance matrix have no noise (identity matrix)
 n = length(measurement.grid)
 inversion_setup["obs_covariance"] = 1.0*I(n)
@@ -32,16 +33,16 @@ inversion_setup["obs_covariance"] = 1.0*I(n)
 @everywhere begin
     datadir = "/net/fluo/data1/data/NIST/spectra/"
     CO₂_oco = get_molecule_info("CO2", joinpath(datadir, "OCO_12CO2_weakband.jld2"), ν_grid)
-        CO₂ = get_molecule_info("CO2", joinpath(datadir, "hit20_12CO2.par"), 2, 1, ν_grid)
-    H₂O = get_molecule_info("H2O", joinpath(datadir, "tccon_2020.par"), 1, 1, ν_grid)
-    molecules_oco = [H₂O, CO₂_oco]
-molecules = [H₂O, CO₂]
+    CO₂ = get_molecule_info("CO2", joinpath(datadir, "hit20_12CO2.par"), 2, 1, ν_grid)
+    molecules_oco = [CO₂_oco]
+molecules = [CO₂]
 end
 
 
 p_guess, T_guess = 1000.0, 300.0
 pathlength = 195017.0
 measurement.vcd = SpectralFits.calc_vcd(p_guess, T_guess, pathlength) # calc v=the vcd given specified p and TDCSA
+
 # the true p and T for computing psudo-measurements 
 p = 400.0:20.0:1000.0
 T = 200.0:3.0:300.0
@@ -60,28 +61,20 @@ end
 
             println("T=",T, ", p=", p)
 pathlength = 195017.0 # round trip path length in meters DCS
-            vcd = SpectralFits.calc_vcd(p, T, pathlength, 0.005)
+            vcd = SpectralFits.calc_vcd(p, T, pathlength)
     spec_true = setup_molecules(molecules_oco)
 
     # true state 
-            x_true = StateVector("H2O" => 0.005 * vcd,
-                                          "CO2" => 400e-6 * vcd,
+            x_true = StateVector("CO2" => 400e-6 * vcd,
                                           "pressure" => p,
                                           "temperature" => T,
                                           "shape_parameters" => [maximum(measurement.intensity); zeros(inversion_setup["poly_degree"]-1)])
 
-
-
-
             f = generate_forward_model(x_true, measurement, spec_true, inversion_setup);
-            τ = f(x_true)
-            σ = 0.005610022028250306 / sqrt(10)
-            ϵ = randn(length(τ)) * σ
-            measurement.intensity = τ #.+ ϵ
+            measurement.intensity = τ 
 
     # initial guess 
-           xₐ = StateVector("H2O" => 0.005 * vcd,
-                                                         "CO2" => 380e-6 * vcd,
+           xₐ = StateVector("CO2" => 380e-6 * vcd,
                   "pressure" => measurement.pressure,
                   "temperature" => measurement.temperature,
                   "shape_parameters" => [maximum(measurement.intensity); zeros(inversion_setup["poly_degree"]-1)])
@@ -104,7 +97,6 @@ pathlength = 195017.0 # round trip path length in cm DCSA
 
 # load the column amounts 
 co2_col = [out[i,j].x["CO2"] for i=1:np,j=1:nT]    
-h2o_col = [out[i,j].x["H2O"] for i=1:np,j=1:nT]
 
 # pressure and temperature 
 p_true = p
@@ -116,7 +108,7 @@ T = [out[i,j].x["temperature"] for i=1:np,j=1:nT]
 vcd = SpectralFits.calc_vcd.(p, T, pathlength)
 
 # VMR of gases 
-co2 = 1e6*co2_col ./ (vcd - h2o_col)    
+co2 = 1e6*co2_col ./ vcd 
 h2o = 1e2*h2o_col ./ (vcd - h2o_col)
 println("Saving data")    
-@save "co2_hit20_results.jld2" p p_true T T_true co2_col co2 h2o_col h2o vcd 
+@save "co2_hit16_results.jld2" p p_true T T_true co2_col co2 vcd 

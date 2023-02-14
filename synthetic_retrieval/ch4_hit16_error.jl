@@ -1,5 +1,5 @@
 using Distributed
-addprocs(5)
+addprocs(10)
 @everywhere begin
 using SpectralFits, LinearAlgebra
 using vSmartMOM
@@ -14,11 +14,9 @@ end
     "fit_temperature" => true,
     "linear" => false,
     "architecture" => CPU(),
-"averaging_window" => Minute(15),
-    "verbose_mode" => true,
-    "fit_column" => true)
-    
-
+    "averaging_window" => Minute(15),
+        "verbose_mode" => true,
+	"fit_column" => true)
 
 # Just defining the spectral windows for each species
 @everywhere ν_grid = 6050:0.005:6120
@@ -34,10 +32,9 @@ inversion_setup["obs_covariance"] = 1.0*I(n)
 @everywhere begin
     datadir = "/net/fluo/data1/data/NIST/spectra/"
     CH₄_08 = get_molecule_info("CH4", joinpath(datadir, "hit08_12CH4.par"), 6, 1, ν_grid)
-    CH₄ = get_molecule_info("CH4", joinpath(datadir, "hit16_12CH4.par"), 6, 1, ν_grid)
-    H₂O = get_molecule_info("H2O", joinpath(datadir, "tccon_2020.par"), 1, 1, ν_grid)
-    molecules_08 = [H₂O, CH₄_08]
-molecules = [H₂O, CH₄]
+    CH₄ = get_molecule_info("CH4", joinpath(datadir, "hit16_2020.par"), 6, 1, ν_grid)
+    molecules_08 = [CH₄_08]
+molecules = [CH₄]
 end
 
 
@@ -63,28 +60,21 @@ end
 
             println("T=",T, ", p=", p)
 pathlength = 195017.0 # round trip path length in meters DCS
-            vcd = SpectralFits.calc_vcd(p, T, pathlength, 0.005)
+            vcd = SpectralFits.calc_vcd(p, T, pathlength)
     spec_true = setup_molecules(molecules_08)
 
     # true state 
-            x_true = StateVector("H2O" => 0.005 * vcd,
-                                          "CH4" => 2000e-9 * vcd,
+            x_true = StateVector("CH4" => 2000e-9 * vcd,
                                           "pressure" => p,
                                           "temperature" => T,
                                           "shape_parameters" => [maximum(measurement.intensity); zeros(inversion_setup["poly_degree"]-1)])
 
-
-
-
             f = generate_forward_model(x_true, measurement, spec_true, inversion_setup);
             τ = f(x_true)
-            σ = 0.005610022028250306 / sqrt(10)
-            ϵ = randn(length(τ)) * σ
-            measurement.intensity = τ #.+ ϵ
+	    measurement.intensity = τ # synthetic measurement 
 
     # initial guess 
-           xₐ = StateVector("H2O" => 0.005 * vcd,
-                                                         "CH4" => 2000e-9 * vcd,
+           xₐ = StateVector("CH4" => 2000e-9 * vcd,
                   "pressure" => measurement.pressure,
                   "temperature" => measurement.temperature,
                   "shape_parameters" => [maximum(measurement.intensity); zeros(inversion_setup["poly_degree"]-1)])
@@ -99,15 +89,13 @@ out = nonlinear_inversion(f1, xₐ, measurement, spec1, inversion_setup)
 end
 
 
-out = pmap(x->retrieve(x[1], x[2], inversion_setup),params)
-
+out = pmap(x->retrieve(x[1], x[2], inversion_setup),params) 
 println("done with all data. saving")
 pathlength = 195017.0 # round trip path length in cm DCSA
 (np, nT) = size(out)
 
 # load the column amounts 
 ch4_col = [out[i,j].x["CH4"] for i=1:np,j=1:nT]    
-h2o_col = [out[i,j].x["H2O"] for i=1:np,j=1:nT]
 
 # pressure and temperature 
 p_true = p
@@ -119,7 +107,7 @@ T = [out[i,j].x["temperature"] for i=1:np,j=1:nT]
 vcd = SpectralFits.calc_vcd.(p, T, pathlength)
 
 # VMR of gases 
-ch4 = 1e9*ch4_col ./ (vcd - h2o_col)    
-h2o = 1e2*h2o_col ./ (vcd - h2o_col)
+ch4 = 1e9*ch4_col ./ vcd
+
 println("Saving data")    
-@save "ch4_hit16_results.jld2" p p_true T T_true ch4_col ch4 h2o_col h2o vcd 
+@save "ch4_hit16_results.jld2" p p_true T T_true ch4_col ch4 vcd 
