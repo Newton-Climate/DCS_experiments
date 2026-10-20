@@ -1,0 +1,21 @@
+# MERLIN R(6) window tables (6076-6078 cm-1) for ../../DCS_retrievals/configs/merlin.toml
+# (r6_hit08_narrow and the H2O background); as in ../make_merlin_lookup_tables.jl, only lines
+# inside the window are used. merlin_12CH4 and merlin_12CH4_HT need the vSmartMOM line-mixing
+# branch to read the MERLIN list (read_ht_linelist): build them with that script.
+
+extends = "base.toml"
+wavenumber_cm = { start = 6076.0, stop = 6078.0, step = 0.001 }
+pressure_hPa = { start = 150.0, stop = 1100.0, step = 10.0 }
+temperature_K = { start = 170.0, stop = 340.0, step = 10.0 }
+
+[source]
+line_margin_cm = 0.0
+
+[[variants]]
+name = "hit08_12CH4_narrow"
+output_file = "../hit08_12CH4_narrow.jld2"
+source = { file = "../hit08_12CH4.par", molecule = 6, isotope = 1 }
+[[variants]]
+name = "hit20_H2O_narrow"
+output_file = "../hit20_H2O_narrow.jld2"
+source = { file = "../hit20_H2O.par", molecule = 1, isotope = 1 }

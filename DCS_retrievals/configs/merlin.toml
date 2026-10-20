@@ -1,0 +1,57 @@
+# CH4 R(6) manifold window, 6076.05-6077.95 cm-1, on 20160921: a line-list comparison in which
+# only the CH4 lookup table differs (was run_merlin.jl, run_hit08_narrow.jl, run_merlin_HT.jl):
+#   r6_merlin        MERLIN line list (Vasilchenko et al., 40 lines), Voigt
+#   r6_hit08_narrow  HITRAN 2008 (8 lines in this window), Voigt
+#   r6_merlin_HT     MERLIN, Hartmann-Tran + line mixing (the profile MERLIN was fitted with)
+# Changes from the campaign set-up (campaign_2016.toml):
+#   - 5 baseline coefficients (a 2 cm-1 window)
+#   - CO2 and HDO dropped (no lines in the window); HITRAN 2020 H2O for background lines
+#   - p and T not retrieved (no leverage in 2 cm-1); each average uses its measured p and T
+#   - no CH4 masks (the campaign mask 6076.742-6078.55 covers the manifold)
+#   - noise from the residual of a cubic in two transparent sub-windows of the window, per
+#     record before averaging (was data_driven_noise.jl): the campaign ShotNoise flat region at
+#     6255.1-6255.4 cm-1 over-estimates sigma by about 1.5x here. ResidualNoise fits one cubic
+#     per flat window (n - 4 degrees of freedom each); the v0.1 estimator fitted one cubic
+#     across both windows and used var (n - 1).
+#   - fine_grid_margin_cm = 0.04: the lookup tables span only 6076-6078 cm-1, while the DCS
+#     fine grid otherwise extends 1 cm beyond the window (replaces the EdgeHeld wrapper).
+#
+# Lookup tables: ../../spectra/make_merlin_lookup_tables.jl (needs the vSmartMOM line-mixing
+# branch to read the MERLIN list; see ../README.md).
+#
+# Run:  julia --project=../../../SpectralFit.jl ../../../SpectralFit.jl/bin/run_config.jl merlin.toml [merlin hit08_narrow merlin_HT]
+
+extends = "campaign_2016.toml"
+experiment = "r6"
+data_files = ["../../data/20160921.h5"]
+n_workers = 2
+
+[noise]
+model = "residual"
+flat_windows_cm = [[6076.10, 6076.60],    # blue side, before the first strong R(6) line
+                   [6077.55, 6077.95]]    # red side, past the manifold
+polynomial_order = 3
+
+[retrieval]
+window_cm = [6076.05, 6077.95]
+baseline_coefficients = 5
+retrieve_pressure = false
+retrieve_temperature = false
+fine_grid_margin_cm = 0.04
+masked_windows_cm = []
+
+[absorbers.H2O]
+file = "../../spectra/hit20_H2O_narrow.jld2"
+[absorbers.CH4]
+file = "../../spectra/merlin_12CH4.jld2"
+
+[[variants]]
+name = "merlin"
+
+[[variants]]
+name = "hit08_narrow"
+absorbers.CH4.file = "../../spectra/hit08_12CH4_narrow.jld2"
+
+[[variants]]
+name = "merlin_HT"
+absorbers.CH4.file = "../../spectra/merlin_12CH4_HT.jld2"

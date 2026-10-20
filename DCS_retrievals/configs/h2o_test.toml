@@ -1,0 +1,49 @@
+# Water-vapour line-list test in the CO2 window (6180-6260 cm-1), was h2o_test/run_*.jl:
+#   h2o_oco_co2     OCO H2O
+#   h2o_tccon_co2   TCCON 2020 H2O
+#   h2o_hit16_co2   HITRAN 2016 H2O
+#   h2o_hit20_co2   HITRAN 2020 H2O
+# Every other absorber is the same in all four: HITRAN 2008 CH4, OCO weak-band CO2 and TCCON
+# 2020 HDO. Every .h5 file in ../../data, 15-minute averages, p and T, 100 baseline coefficients.
+#
+# v0.1 took the CO2 from OCO_12CO2_weakband.jld2, a cubic table of the dry-air slice of the OCO
+# ABSCO file that no current script builds; here it is read from the ABSCO file directly, as in
+# oco.toml. The scripts wrote to <data>/h2o_tests and used 15 workers on fluo; results now go
+# to ../../data/runs with the campaign's 4 workers (raise n_workers on a larger machine). To
+# run on fluo, copy this file and point data_directory and the table files at
+# /net/fluo/data1/data/NIST/DCS_A/ and /net/fluo/data1/data/NIST/spectra/.
+#
+# Run:  julia --project=../../../SpectralFit.jl ../../../SpectralFit.jl/bin/run_config.jl h2o_test.toml [oco_co2 tccon_co2 hit16_co2 hit20_co2]
+
+extends = "campaign_2016.toml"
+experiment = "h2o"
+
+[retrieval]
+window_cm = [6180.0, 6260.0]
+
+[absorbers.H2O]
+file = "../../spectra/tccon_H2O.jld2"
+[absorbers.HDO]
+file = "../../spectra/tccon_HDO.jld2"
+[absorbers.CH4]
+file = "../../spectra/hit08_12CH4.jld2"
+[absorbers.CO2]
+file = "../../spectra/OCO_spectra.hdf"
+gas = 2
+range_cm = [6178.0, 6262.0]
+h2o_indices = [1]
+
+[[variants]]
+name = "oco_co2"
+absorbers.H2O.file = "../../spectra/OCO_H2O.jld2"
+
+[[variants]]
+name = "tccon_co2"
+
+[[variants]]
+name = "hit16_co2"
+absorbers.H2O.file = "../../spectra/hit16_H2O.jld2"
+
+[[variants]]
+name = "hit20_co2"
+absorbers.H2O.file = "../../spectra/hit20_H2O.jld2"

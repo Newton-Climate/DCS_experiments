@@ -1,0 +1,137 @@
+# Cross-line-list CO2 experiments (former linelist_errors.jl driver): the synthetic truth is
+# computed with one CO2 line list and retrieved with another, on the US Standard atmosphere
+# of us_standard_co2.toml (whose settings this file inherits; its variants are not).
+#   truth OCO ABSCO 5.1 → retrieved with ABSCO (control), HITRAN 2016, 2020, TCCON 2020
+#   truth HITRAN 2020   → retrieved with HITRAN 2020 (control), 2016, TCCON 2020
+# × mode profile / isotherm / isobar. H2O uses HITRAN 2020 in truth and retrieval; every run
+# has the same noise realization (seed 1). ABSCO is the dry table of make_absco_table.jl
+# (all CO2 isotopologues); the HITRAN/TCCON models are 12CO2 only.
+# Variant names: truth-<truth>_retr-<retrieval>_<mode>. Analysis: ../linelist_errors.jl.
+#
+#   julia --project=../../SpectralFit.jl ../../SpectralFit.jl/bin/run_config.jl configs/crosslist_co2.toml [variant ...]
+
+extends = "us_standard_co2.toml"
+experiment = "crosslist_co2"
+
+# Interfering gas, HITRAN 2020 in truth and retrieval (the CO2 cross sections are set per variant)
+[gases.H2O]
+cross_section = { file = "../../spectra/hit20_H2O.par", molecule = 1, range_cm = [6180.0, 6260.0] }
+
+[[variants]]
+name = "truth-ABSCO51_retr-ABSCO51_profile"
+gases.CO2.cross_section = { file = "../../spectra/linelist_tables/ABSCO51_CO2_dry.jld2" }
+gases.CO2.truth_cross_section = { file = "../../spectra/linelist_tables/ABSCO51_CO2_dry.jld2" }
+
+[[variants]]
+name = "truth-ABSCO51_retr-HIT16_profile"
+gases.CO2.cross_section = { file = "../../spectra/hit16_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+gases.CO2.truth_cross_section = { file = "../../spectra/linelist_tables/ABSCO51_CO2_dry.jld2" }
+
+[[variants]]
+name = "truth-ABSCO51_retr-HIT20_profile"
+gases.CO2.cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+gases.CO2.truth_cross_section = { file = "../../spectra/linelist_tables/ABSCO51_CO2_dry.jld2" }
+
+[[variants]]
+name = "truth-ABSCO51_retr-TCCON_profile"
+gases.CO2.cross_section = { file = "../../spectra/tccon_2020.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+gases.CO2.truth_cross_section = { file = "../../spectra/linelist_tables/ABSCO51_CO2_dry.jld2" }
+
+[[variants]]
+name = "truth-ABSCO51_retr-ABSCO51_isotherm"
+atmosphere.mode = "isotherm"
+gases.CO2.cross_section = { file = "../../spectra/linelist_tables/ABSCO51_CO2_dry.jld2" }
+gases.CO2.truth_cross_section = { file = "../../spectra/linelist_tables/ABSCO51_CO2_dry.jld2" }
+
+[[variants]]
+name = "truth-ABSCO51_retr-HIT16_isotherm"
+atmosphere.mode = "isotherm"
+gases.CO2.cross_section = { file = "../../spectra/hit16_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+gases.CO2.truth_cross_section = { file = "../../spectra/linelist_tables/ABSCO51_CO2_dry.jld2" }
+
+[[variants]]
+name = "truth-ABSCO51_retr-HIT20_isotherm"
+atmosphere.mode = "isotherm"
+gases.CO2.cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+gases.CO2.truth_cross_section = { file = "../../spectra/linelist_tables/ABSCO51_CO2_dry.jld2" }
+
+[[variants]]
+name = "truth-ABSCO51_retr-TCCON_isotherm"
+atmosphere.mode = "isotherm"
+gases.CO2.cross_section = { file = "../../spectra/tccon_2020.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+gases.CO2.truth_cross_section = { file = "../../spectra/linelist_tables/ABSCO51_CO2_dry.jld2" }
+
+[[variants]]
+name = "truth-ABSCO51_retr-ABSCO51_isobar"
+atmosphere.mode = "isobar"
+gases.CO2.cross_section = { file = "../../spectra/linelist_tables/ABSCO51_CO2_dry.jld2" }
+gases.CO2.truth_cross_section = { file = "../../spectra/linelist_tables/ABSCO51_CO2_dry.jld2" }
+
+[[variants]]
+name = "truth-ABSCO51_retr-HIT16_isobar"
+atmosphere.mode = "isobar"
+gases.CO2.cross_section = { file = "../../spectra/hit16_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+gases.CO2.truth_cross_section = { file = "../../spectra/linelist_tables/ABSCO51_CO2_dry.jld2" }
+
+[[variants]]
+name = "truth-ABSCO51_retr-HIT20_isobar"
+atmosphere.mode = "isobar"
+gases.CO2.cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+gases.CO2.truth_cross_section = { file = "../../spectra/linelist_tables/ABSCO51_CO2_dry.jld2" }
+
+[[variants]]
+name = "truth-ABSCO51_retr-TCCON_isobar"
+atmosphere.mode = "isobar"
+gases.CO2.cross_section = { file = "../../spectra/tccon_2020.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+gases.CO2.truth_cross_section = { file = "../../spectra/linelist_tables/ABSCO51_CO2_dry.jld2" }
+
+[[variants]]
+name = "truth-HIT20_retr-HIT20_profile"
+gases.CO2.cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+gases.CO2.truth_cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+
+[[variants]]
+name = "truth-HIT20_retr-HIT16_profile"
+gases.CO2.cross_section = { file = "../../spectra/hit16_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+gases.CO2.truth_cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+
+[[variants]]
+name = "truth-HIT20_retr-TCCON_profile"
+gases.CO2.cross_section = { file = "../../spectra/tccon_2020.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+gases.CO2.truth_cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+
+[[variants]]
+name = "truth-HIT20_retr-HIT20_isotherm"
+atmosphere.mode = "isotherm"
+gases.CO2.cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+gases.CO2.truth_cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+
+[[variants]]
+name = "truth-HIT20_retr-HIT16_isotherm"
+atmosphere.mode = "isotherm"
+gases.CO2.cross_section = { file = "../../spectra/hit16_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+gases.CO2.truth_cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+
+[[variants]]
+name = "truth-HIT20_retr-TCCON_isotherm"
+atmosphere.mode = "isotherm"
+gases.CO2.cross_section = { file = "../../spectra/tccon_2020.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+gases.CO2.truth_cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+
+[[variants]]
+name = "truth-HIT20_retr-HIT20_isobar"
+atmosphere.mode = "isobar"
+gases.CO2.cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+gases.CO2.truth_cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+
+[[variants]]
+name = "truth-HIT20_retr-HIT16_isobar"
+atmosphere.mode = "isobar"
+gases.CO2.cross_section = { file = "../../spectra/hit16_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+gases.CO2.truth_cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+
+[[variants]]
+name = "truth-HIT20_retr-TCCON_isobar"
+atmosphere.mode = "isobar"
+gases.CO2.cross_section = { file = "../../spectra/tccon_2020.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+gases.CO2.truth_cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }

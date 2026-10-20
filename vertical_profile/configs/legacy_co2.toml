@@ -1,0 +1,69 @@
+# The three legacy CO2 profile scripts as variants (former CO2_profile.jl, CO2_isotherm_test.jl,
+# CO2_isobar_test.jl, with the fixes of their v0.2 hand-port):
+#   35 layers 0–10 km, p(z) = 1000 hPa exp(−z / 8.5 km), H2O 0.005 → 0.001,
+#   CO2 410 → 400 ppm; HITRAN 2020 H2O and CO2, line-by-line; intensity space; initial damping γ 50.
+#   profile:  T(z) = 290 K − 6.5 K/km z; SNR 2000; prior correlated in pressure (CO2 50 hPa)
+#   isotherm: every layer at 300 K, layer columns from T(z) = 280 K − 6.5 K/km z (as v0.1,
+#             which left the column-weighted mean commented out); SNR 1500; diagonal prior
+#   isobar:   every layer at the column-weighted mean p, T(z) = 290 K − 6.5 K/km z, layer
+#             columns from T(z) = 270 K − 6.5 K/km z (as v0.1); CO2 prior σ 80 ppm; SNR 2000;
+#             prior correlated in profile pressure (CO2 50 hPa)
+# Fixes kept from the hand-port: isobar noise σ = mean intensity / SNR (v0.1 divided the
+# noise by the signal), line-by-line everywhere (v0.1 isobar used lookup tables).
+#
+#   julia --project=../../SpectralFit.jl ../../SpectralFit.jl/bin/run_config.jl configs/legacy_co2.toml [profile|isotherm|isobar]
+
+extends = "base.toml"
+experiment = "legacy_co2"
+target = "CO2"
+window_cm = [6180.0, 6260.0]
+measurement_space = "linear"
+
+[noise]
+source = "snr"
+snr = 2000.0
+
+[atmosphere]
+n_layers = 35
+top_m = 10000.0
+pressure = { kind = "exponential", surface_hPa = 1000.0, scale_height_m = 8500.0 }
+temperature = { kind = "lapse_rate", surface_K = 290.0, lapse_K_per_m = 0.0065 }
+layer_columns = "ideal_gas"
+mode = "profile"
+
+[prior]
+correlation_coordinate = "pressure_hPa"
+
+[solver]
+initial_damping = 50.0
+
+[gases.H2O]
+truth = { kind = "linear", bottom = 0.005, top = 0.001 }
+prior = 0.005
+sigma = 0.01
+correlation_length = 0.01         # hPa: uncorrelated
+cross_section = { file = "../../spectra/hit20_H2O.par", molecule = 1, range_cm = [6180.0, 6260.0] }
+
+[gases.CO2]
+truth = { kind = "linear", bottom = 410e-6, top = 400e-6 }
+prior = 405e-6
+sigma = 100e-6
+correlation_length = 50.0         # hPa
+cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6180.0, 6260.0] }
+
+[[variants]]
+name = "profile"
+
+[[variants]]
+name = "isotherm"
+noise.snr = 1500.0
+atmosphere.mode = "isotherm"
+atmosphere.temperature = { kind = "lapse_rate", surface_K = 280.0, lapse_K_per_m = 0.0065 }
+atmosphere.isotherm_temperature_K = 300.0
+prior.correlation_coordinate = "none"
+
+[[variants]]
+name = "isobar"
+atmosphere.mode = "isobar"
+atmosphere.column_temperature = { kind = "lapse_rate", surface_K = 270.0, lapse_K_per_m = 0.0065 }
+gases.CO2.sigma = 80e-6

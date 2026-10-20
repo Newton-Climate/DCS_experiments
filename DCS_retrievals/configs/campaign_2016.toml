@@ -1,0 +1,45 @@
+# Shared settings of the 2016 DCS A campaign retrievals (SpectralFits batch_retrieval app).
+# Experiment files extend this one; relative paths are relative to this directory.
+
+app = "batch_retrieval"
+experiment = "campaign_2016"
+data_directory = "../../data"        # every .h5 file in it, as v0.1 process_all_files
+output_root = "../../data/runs"
+averaging_minutes = 15
+parallel = "processes"
+n_workers = 4
+
+[reader]
+path_length_cm = 195017.0            # DCS A round trip
+pressure_scale = 0.9938              # 2016 campaign pressure correction (v0.1 hard-coded it)
+
+# no [noise] table: the reader's ShotNoise() (v0.1 calc_DCS_noise, flat 6255.1-6255.4 cm-1)
+
+[retrieval]
+baseline_coefficients = 100
+retrieve_pressure = true
+retrieve_temperature = true
+fine_grid_spacing_cm = 0.003
+# CH4 lines de-weighted by 1e-5 (v0.1 masked_windows); outside the CH4 window they do nothing
+masked_windows_cm = [[6109.211, 6109.411], [6116.137, 6116.464], [6119.62, 6120.0],
+                     [6088.826, 6089.246], [6087.358, 6087.652], [6076.742, 6078.55],
+                     [6063.577, 6064.077], [6058.666, 6059.153], [6109.885, 6110.071]]
+
+[solver]
+name = "gauss_newton"
+
+# v0.1 fitted these by unconstrained least squares; the batch app needs a finite prior, so
+# the sigmas are wide and the prior influence is negligible. Gas values and sigmas are dry
+# mole fractions of the air column at the reference pressure and temperature.
+[prior]
+reference_pressure_hPa = 850.0
+reference_temperature_K = 285.0
+baseline_sigma = 1e3
+pressure_hPa = { value = 850.0, sigma = 100.0 }
+temperature_K = { value = 285.0, sigma = 30.0 }
+
+[prior.gases]
+H2O = { value = 0.01, sigma = 1.0 }
+CH4 = { value = 1900e-9, sigma = 1e-6 }
+CO2 = { value = 400e-6, sigma = 400e-6 }
+HDO = { value = 1e-4, sigma = 1e-3 }

@@ -1,0 +1,28 @@
+# CH4-window tables (6049-6116 cm-1) for ../../DCS_retrievals/configs/hit24.toml; replaces
+# ../make_hit24_lookup_tables.jl for this window. The line-mixing CH4 tables need the
+# vSmartMOM line-mixing branch for their cross sections: ../make_hit24_lm_lookup_tables.jl
+# (stage 1), then hit24_lm_ch4win.toml here (stage 2) turns the array it writes into a table.
+
+extends = "base.toml"
+wavenumber_cm = { start = 6049.0, stop = 6116.0, step = 0.003 }
+
+[[variants]]
+name = "hit08_12CH4_ch4win"
+output_file = "../hit08_12CH4_ch4win.jld2"
+source = { file = "../hit08_12CH4.par", molecule = 6, isotope = 1 }
+[[variants]]
+name = "hit24_12CH4_ch4win"
+output_file = "../hit24_12CH4_ch4win.jld2"
+source = { file = "../hit24_12CH4.par", molecule = 6, isotope = 1 }
+[[variants]]
+name = "tccon_H2O_ch4win"
+output_file = "../tccon_H2O_ch4win.jld2"
+source = { file = "../tccon_2020.par", molecule = 1, isotope = 1 }
+[[variants]]
+name = "tccon_HDO_ch4win"
+output_file = "../tccon_HDO_ch4win.jld2"
+source = { file = "../tccon_2020.par", molecule = 1, isotope = 4, relabel = ["491", " 14"] }
+[[variants]]
+name = "hit20_12CO2_ch4win"
+output_file = "../hit20_12CO2_ch4win.jld2"
+source = { file = "../hit20_12CO2.par", molecule = 2, isotope = 1 }

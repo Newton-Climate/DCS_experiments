@@ -1,0 +1,59 @@
+# Water-vapour broadening of CH4 (was run_CH4broadening.jl and test_ch4_broadening.jl): the
+# CH4 cross sections are evaluated at the effective pressure p (1 + 0.34 q_H2O), with q_H2O
+# the dry H2O mole fraction from the retrieved H2O column (v0.1 "adjust_ch4_broadening").
+#
+#   ch4_broadening_ch4       hit08 set-up (masks off), CH4 window 6050-6115 cm-1, broadening on
+#   ch4_broadening_co2       the same in the CO2 window 6180-6260 cm-1
+#   ch4_broadening_test_off  test_ch4_broadening.jl: H2O (TCCON 2020) and CH4 (HITRAN 2020)
+#   ch4_broadening_test_on   only, 6050-6120 cm-1, no masks; broadening off / on
+#
+# The v0.1 run_CH4broadening.jl retrieved every record (no time averaging); here every run is
+# on 15-minute averages. test_ch4_broadening.jl fitted only the first average of 20160921;
+# the test variants retrieve the whole day (compare them record by record). That script also
+# started p and T from the mean measured p and T; here the prior is 850 hPa, 285 K
+# (campaign_2016.toml, sigma 100 hPa / 30 K).
+#
+# Lookup tables: ../../spectra/make_lookup_tables.jl (see ../README.md).
+#
+# Run:  julia --project=../../../SpectralFit.jl ../../../SpectralFit.jl/bin/run_config.jl ch4_broadening.toml [ch4 co2 test_off test_on]
+
+extends = "campaign_2016.toml"
+experiment = "ch4_broadening"
+
+[retrieval]
+masked_windows_cm = []
+
+# variants cannot remove an absorber from the file, so each variant lists its own
+
+[[variants]]
+name = "ch4"
+retrieval.window_cm = [6050.0, 6115.0]
+retrieval.h2o_broadening = { CH4 = 0.34 }
+absorbers.H2O.file = "../../spectra/tccon_H2O.jld2"
+absorbers.HDO.file = "../../spectra/tccon_HDO.jld2"
+absorbers.CO2.file = "../../spectra/hit20_12CO2.jld2"
+absorbers.CH4.file = "../../spectra/hit08_12CH4.jld2"
+
+[[variants]]
+name = "co2"
+retrieval.window_cm = [6180.0, 6260.0]
+retrieval.h2o_broadening = { CH4 = 0.34 }
+absorbers.H2O.file = "../../spectra/tccon_H2O.jld2"
+absorbers.HDO.file = "../../spectra/tccon_HDO.jld2"
+absorbers.CO2.file = "../../spectra/hit20_12CO2.jld2"
+absorbers.CH4.file = "../../spectra/hit08_12CH4.jld2"
+
+[[variants]]
+name = "test_off"
+data_files = ["../../data/20160921.h5"]
+retrieval.window_cm = [6050.0, 6120.0]
+absorbers.H2O.file = "../../spectra/tccon_H2O.jld2"
+absorbers.CH4.file = "../../spectra/hit20_12CH4.jld2"
+
+[[variants]]
+name = "test_on"
+data_files = ["../../data/20160921.h5"]
+retrieval.window_cm = [6050.0, 6120.0]
+retrieval.h2o_broadening = { CH4 = 0.34 }
+absorbers.H2O.file = "../../spectra/tccon_H2O.jld2"
+absorbers.CH4.file = "../../spectra/hit20_12CH4.jld2"

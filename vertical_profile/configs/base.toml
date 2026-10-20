@@ -1,0 +1,25 @@
+# Settings shared by every synthetic vertical-profile experiment (SpectralFits ProfileOSSE app).
+# The other configs in this folder extend this file; see ../README.md.
+
+app = "profile_osse"
+output_root = "../runs"
+seed = 1                          # noise realization; the same in every run
+fine_grid_spacing_cm = 0.002      # fine grid = the retrieval window at this spacing (as v0.1)
+baseline_coefficients = 5
+
+# Wavenumbers and data-driven noise: 15-minute average 10 of the 20160921 DCS file
+[template]
+dcs_file = "../../data/20160921.h5"
+average_index = 10
+averaging_minutes = 15
+reader = { pressure_scale = 0.9938 }
+
+[noise]
+source = "template"               # sigma = the template's ShotNoise estimate
+
+[prior]
+baseline_sigma = 1.0
+nugget = 1e-6                     # Gaussian kernels on these layer spacings are singular without it
+
+[solver]
+name = "levenberg_marquardt"

@@ -1,0 +1,26 @@
+# CO2-window tables (6179-6261 cm-1) for ../../DCS_retrievals/configs/hit24_co2.toml; replaces
+# ../make_hit24_lookup_tables.jl for this window. OCO_12CO2_co2win is the ABSCO dry-air slice.
+
+extends = "base.toml"
+wavenumber_cm = { start = 6179.0, stop = 6261.0, step = 0.003 }
+
+[[variants]]
+name = "OCO_12CO2_co2win"
+output_file = "../OCO_12CO2_co2win.jld2"
+source = { _replace = true, file = "../OCO_spectra.hdf", gas = 2, range_cm = [6178.0, 6262.0], h2o_indices = [1] }
+[[variants]]
+name = "hit24_12CO2_co2win"
+output_file = "../hit24_12CO2_co2win.jld2"
+source = { file = "../hit24_12CO2.par", molecule = 2, isotope = 1 }
+[[variants]]
+name = "tccon_H2O_co2win"
+output_file = "../tccon_H2O_co2win.jld2"
+source = { file = "../tccon_2020.par", molecule = 1, isotope = 1 }
+[[variants]]
+name = "tccon_HDO_co2win"
+output_file = "../tccon_HDO_co2win.jld2"
+source = { file = "../tccon_2020.par", molecule = 1, isotope = 4, relabel = ["491", " 14"] }
+[[variants]]
+name = "hit08_12CH4_co2win"
+output_file = "../hit08_12CH4_co2win.jld2"
+source = { file = "../hit08_12CH4.par", molecule = 6, isotope = 1 }

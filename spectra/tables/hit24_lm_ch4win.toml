@@ -1,0 +1,16 @@
+# Stage 2 of the HITRAN 2024 line-mixing CH4 tables: the cross sections are computed on the
+# hit24_ch4win grid by ../make_hit24_lm_lookup_tables.jl run with the vSmartMOM line-mixing
+# branch (stage 1, writes hit24_12CH4_<lm|sdvlm>_ch4win_cs.jld2); this splines them into the
+# tables. Equivalent to running that script again in the SpectralFits environment.
+
+extends = "base.toml"
+wavenumber_cm = { start = 6049.0, stop = 6116.0, step = 0.003 }
+
+[[variants]]
+name = "hit24_12CH4_lm_ch4win"
+output_file = "../hit24_12CH4_lm_ch4win.jld2"
+source = { _replace = true, file = "../hit24_12CH4_lm_ch4win_cs.jld2", array_key = "cs", molecule = 6, isotope = 1 }
+[[variants]]
+name = "hit24_12CH4_sdvlm_ch4win"
+output_file = "../hit24_12CH4_sdvlm_ch4win.jld2"
+source = { _replace = true, file = "../hit24_12CH4_sdvlm_ch4win_cs.jld2", array_key = "cs", molecule = 6, isotope = 1 }

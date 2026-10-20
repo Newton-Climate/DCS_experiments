@@ -1,0 +1,52 @@
+# Former CO2_profile2.jl: despite its name a CH4-window experiment, an early variant of the
+# CH4 profile case. 44 layers 0–10 km with hydrostatic (dry-air) layer columns,
+# p(z) = 1000 hPa exp(−z / 8.5 km), T(z) = 300 K − 6.5 K/km z, H2O increasing 0.001 → 0.01,
+# CH4 2000 → 1800 ppb, CO2 410 → 400 ppm; HITRAN 2020 H2O, CH4 and CO2, line-by-line;
+# 100 baseline coefficients; diagonal prior; Gauss-Newton (v0.1 `profile_inversion`);
+# intensity space; noise SNR 2000. (v0.1 hydrostatic columns included the H2O mass and the
+# script divided by (vcd − H2O) twice; the hand-port and this config use dry-air columns.)
+#
+#   julia --project=../../SpectralFit.jl ../../SpectralFit.jl/bin/run_config.jl configs/ch4_profile2.toml
+
+extends = "base.toml"
+experiment = "ch4_profile2"
+target = "CH4"
+window_cm = [6050.0, 6120.0]
+measurement_space = "linear"
+baseline_coefficients = 100
+
+[noise]
+source = "snr"
+snr = 2000.0
+
+[atmosphere]
+n_layers = 44
+top_m = 10000.0
+pressure = { kind = "exponential", surface_hPa = 1000.0, scale_height_m = 8500.0 }
+temperature = { kind = "lapse_rate", surface_K = 300.0, lapse_K_per_m = 0.0065 }
+layer_columns = "hydrostatic"
+mode = "profile"
+
+[prior]
+correlation_coordinate = "none"
+
+[solver]
+name = "gauss_newton"
+
+[gases.H2O]
+truth = { kind = "linear", bottom = 0.001, top = 0.01 }
+prior = 0.05
+sigma = 0.1
+cross_section = { file = "../../spectra/hit20_H2O.par", molecule = 1, range_cm = [6050.0, 6120.0] }
+
+[gases.CH4]
+truth = { kind = "linear", bottom = 2000e-9, top = 1800e-9 }
+prior = 1900e-9
+sigma = 600e-9
+cross_section = { file = "../../spectra/hit20_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+
+[gases.CO2]
+truth = { kind = "linear", bottom = 410e-6, top = 400e-6 }
+prior = 405e-6
+sigma = 100e-6
+cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6050.0, 6120.0] }

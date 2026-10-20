@@ -1,0 +1,27 @@
+# US Standard 1976 troposphere, 35 layers 0–10 km (the former run_profiles.jl atmosphere).
+# Extended by us_standard_ch4.toml and us_standard_co2.toml; not run on its own.
+
+extends = "base.toml"
+
+[atmosphere]
+n_layers = 35
+top_m = 10000.0
+pressure = { kind = "us_standard" }                                      # 1013.25 hPa, hydrostatic
+temperature = { kind = "lapse_rate", surface_K = 288.15, lapse_K_per_m = 0.0065 }
+layer_columns = "ideal_gas"       # v0.1 calc_vcd over the layer thickness, times (1 − H2O)
+mode = "profile"
+
+[prior]
+correlation_coordinate = "height_km"
+
+[gases.H2O]
+truth = { kind = "exponential", surface = 0.006, scale_height_m = 2000.0 }
+prior = 0.005
+sigma = 0.01
+correlation_length = 0.01         # km: effectively uncorrelated
+
+[gases.CO2]
+truth = { kind = "linear", bottom = 410e-6, top = 400e-6 }
+prior = 405e-6
+sigma = 100e-6
+correlation_length = 0.5

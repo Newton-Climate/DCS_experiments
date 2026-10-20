@@ -1,0 +1,49 @@
+# CO2 window (6180-6260 cm-1) with the H2O-broadened OCO ABSCO v5.1 table: the CO2 cross
+# section is interpolated in the H2O broadener VMR too, looked up with the dry H2O mole
+# fraction from the retrieved H2O column, as the OCO L2 code does.
+#
+#   oco_h2o_co2         was run_OCO_H2O.jl: HITRAN 2008 CH4, TCCON 2020 H2O and HDO
+#   oco_h2o_test_absco  was test_OCO_tables.jl: HITRAN 2020 CH4, TCCON 2020 H2O and HDO,
+#   oco_h2o_test_hit20    CO2 from the ABSCO table / from the HITRAN 2020 table
+#
+# Every .h5 file in ../../data (the test variants: 20160921 only), 15-minute averages, p and T,
+# 100 baseline coefficients. test_OCO_tables.jl fitted only the first average of 20160921 and
+# started p and T from the mean measured p and T; the test variants retrieve the whole day
+# from the campaign prior (850 hPa, 285 K).
+#
+# v0.1 did this with "use_OCO_table" and a hand-patched interpolant (OCO_12CO2_h2o.jld2), a
+# code path that could not work as written; the ABSCO table replaces it.
+#
+# Run:  julia --project=../../../SpectralFit.jl ../../../SpectralFit.jl/bin/run_config.jl oco_h2o.toml [co2 test_absco test_hit20]
+
+extends = "campaign_2016.toml"
+experiment = "oco_h2o"
+
+[retrieval]
+window_cm = [6180.0, 6260.0]
+
+[absorbers.H2O]
+file = "../../spectra/tccon_H2O.jld2"
+[absorbers.HDO]
+file = "../../spectra/tccon_HDO.jld2"
+[absorbers.CH4]
+file = "../../spectra/hit08_12CH4.jld2"
+
+# CO2 is set per variant: a variant's table is merged into the file's key by key, so a .jld2
+# CO2 could not drop the ABSCO keys (gas, range_cm) of a file-level CO2
+
+[[variants]]
+name = "co2"
+absorbers.CO2 = { file = "../../spectra/OCO_spectra.hdf", gas = 2, range_cm = [6178.0, 6262.0] }
+
+[[variants]]
+name = "test_absco"
+data_files = ["../../data/20160921.h5"]
+absorbers.CH4.file = "../../spectra/hit20_12CH4.jld2"
+absorbers.CO2 = { file = "../../spectra/OCO_spectra.hdf", gas = 2, range_cm = [6178.0, 6262.0] }
+
+[[variants]]
+name = "test_hit20"
+data_files = ["../../data/20160921.h5"]
+absorbers.CH4.file = "../../spectra/hit20_12CH4.jld2"
+absorbers.CO2.file = "../../spectra/hit20_12CO2.jld2"

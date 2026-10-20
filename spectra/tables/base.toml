@@ -1,0 +1,18 @@
+# Shared settings of the lookup tables for the DCS retrievals (SpectralFits lookup_table app).
+# Each table file extends this one and sets the grid; each variant is one table.
+#
+# Build:  julia -t auto --project=../../../SpectralFit.jl ../../../SpectralFit.jl/bin/run_config.jl <file>.toml [table ...]
+# Tables are written next to the line lists in ../ with a <table>.toml provenance file;
+# existing tables are not replaced unless overwrite = true.
+
+app = "lookup_table"
+experiment = "table"
+# DCS 20160921 is near 820 hPa and 286-300 K; the box leaves room for fitted p and T
+pressure_hPa = { start = 600.0, stop = 1050.0, step = 10.0 }
+temperature_K = { start = 230.0, stop = 350.0, step = 10.0 }
+coefficient_type = "Float64"
+
+[source]
+line_margin_cm = 40.0      # lines within 40 cm-1 of the grid
+wing_cutoff_cm = 40
+line_shape = "voigt"
