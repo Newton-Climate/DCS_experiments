@@ -1,0 +1,75 @@
+# HITRAN 2024 CH4 line-list comparison on the 20160921 DCS data (was run_hit24.jl), CH4 window
+# 6050-6115 cm-1, CH4 line masks, 100 baseline coefficients. Each variant changes only the CH4
+# spectroscopy, or fixes p and T:
+#   ch4_hit24        HITRAN 2024, Voigt
+#   ch4_hit24_lm     HITRAN 2024, Voigt + first-order line mixing (y_air)
+#   ch4_hit24_sdvlm  HITRAN 2024, speed-dependent Voigt + line mixing
+#   ch4_hit08        HITRAN 2008, Voigt (re-run of the campaign baseline on these tables)
+#   ch4_<above>_fixpT  the same with p and T fixed to the tower record instead of retrieved
+# Interferers: TCCON 2020 H2O and HDO, HITRAN 2020 CO2. The CO2-window half of run_hit24.jl
+# (co2_oco, co2_hit24) is hit24_co2.toml: a variant's experiment is always <experiment>_<name>,
+# so one file cannot hold both the ch4_* and the co2_* names.
+#
+# Lookup tables (6049-6116 cm-1): ../../spectra/make_hit24_lookup_tables.jl and
+# make_hit24_lm_lookup_tables.jl. The _fixpT variants need ../../data/tower_pT_20160921.csv,
+# written by ../export_tower_pT.jl; each 15-minute average gets the tower p and T nearest its
+# first sample time (within 60 s), recorded in the results' metadata["conditions"].
+#
+# Run:  julia --project=../../../SpectralFit.jl ../../../SpectralFit.jl/bin/run_config.jl hit24.toml [hit24 hit24_lm ...]
+# Results: ../../data/runs/<date>_ch4_<variant>_<git hash>/results/20160921_results.jld2
+
+extends = "campaign_2016.toml"
+experiment = "ch4"
+data_files = ["../../data/20160921.h5"]
+
+[retrieval]
+window_cm = [6050.0, 6115.0]
+
+[absorbers.H2O]
+file = "../../spectra/tccon_H2O_ch4win.jld2"
+[absorbers.HDO]
+file = "../../spectra/tccon_HDO_ch4win.jld2"
+[absorbers.CO2]
+file = "../../spectra/hit20_12CO2_ch4win.jld2"
+[absorbers.CH4]
+file = "../../spectra/hit24_12CH4_ch4win.jld2"
+
+[[variants]]
+name = "hit24"
+
+[[variants]]
+name = "hit24_lm"
+absorbers.CH4.file = "../../spectra/hit24_12CH4_lm_ch4win.jld2"
+
+[[variants]]
+name = "hit24_sdvlm"
+absorbers.CH4.file = "../../spectra/hit24_12CH4_sdvlm_ch4win.jld2"
+
+[[variants]]
+name = "hit08"
+absorbers.CH4.file = "../../spectra/hit08_12CH4_ch4win.jld2"
+
+# p and T fixed to the tower record
+
+[[variants]]
+name = "hit24_fixpT"
+conditions = { file = "../../data/tower_pT_20160921.csv", max_offset_s = 60 }
+retrieval = { retrieve_pressure = false, retrieve_temperature = false }
+
+[[variants]]
+name = "hit24_lm_fixpT"
+absorbers.CH4.file = "../../spectra/hit24_12CH4_lm_ch4win.jld2"
+conditions = { file = "../../data/tower_pT_20160921.csv", max_offset_s = 60 }
+retrieval = { retrieve_pressure = false, retrieve_temperature = false }
+
+[[variants]]
+name = "hit24_sdvlm_fixpT"
+absorbers.CH4.file = "../../spectra/hit24_12CH4_sdvlm_ch4win.jld2"
+conditions = { file = "../../data/tower_pT_20160921.csv", max_offset_s = 60 }
+retrieval = { retrieve_pressure = false, retrieve_temperature = false }
+
+[[variants]]
+name = "hit08_fixpT"
+absorbers.CH4.file = "../../spectra/hit08_12CH4_ch4win.jld2"
+conditions = { file = "../../data/tower_pT_20160921.csv", max_offset_s = 60 }
+retrieval = { retrieve_pressure = false, retrieve_temperature = false }

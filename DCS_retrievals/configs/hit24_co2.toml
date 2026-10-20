@@ -1,0 +1,50 @@
+# HITRAN 2024 CO2 line-list comparison on the 20160921 DCS data (the CO2-window half of
+# run_hit24.jl; the CH4 window is hit24.toml), CO2 window 6180-6260 cm-1, 100 baseline
+# coefficients. Each variant changes only the CO2 spectroscopy, or fixes p and T:
+#   co2_oco          OCO ABSCO v5.1, dry-air broadener, as a lookup table
+#   co2_hit24        HITRAN 2024, Voigt
+#   co2_<above>_fixpT  the same with p and T fixed to the tower record instead of retrieved
+# Interferers: TCCON 2020 H2O and HDO, HITRAN 2008 CH4.
+#
+# Lookup tables (6179-6261 cm-1, _co2win): ../../spectra/make_hit24_lookup_tables.jl; the OCO
+# ABSCO table spans only 6140-6300 cm-1, hence separate tables per window. The _fixpT variants
+# need ../../data/tower_pT_20160921.csv (../export_tower_pT.jl), see hit24.toml.
+#
+# Run:  julia --project=../../../SpectralFit.jl ../../../SpectralFit.jl/bin/run_config.jl hit24_co2.toml [oco hit24 oco_fixpT hit24_fixpT]
+# Results: ../../data/runs/<date>_co2_<variant>_<git hash>/results/20160921_results.jld2
+
+extends = "campaign_2016.toml"
+experiment = "co2"
+data_files = ["../../data/20160921.h5"]
+
+[retrieval]
+window_cm = [6180.0, 6260.0]
+
+[absorbers.H2O]
+file = "../../spectra/tccon_H2O_co2win.jld2"
+[absorbers.HDO]
+file = "../../spectra/tccon_HDO_co2win.jld2"
+[absorbers.CH4]
+file = "../../spectra/hit08_12CH4_co2win.jld2"
+[absorbers.CO2]
+file = "../../spectra/OCO_12CO2_co2win.jld2"
+
+[[variants]]
+name = "oco"
+
+[[variants]]
+name = "hit24"
+absorbers.CO2.file = "../../spectra/hit24_12CO2_co2win.jld2"
+
+# p and T fixed to the tower record
+
+[[variants]]
+name = "oco_fixpT"
+conditions = { file = "../../data/tower_pT_20160921.csv", max_offset_s = 60 }
+retrieval = { retrieve_pressure = false, retrieve_temperature = false }
+
+[[variants]]
+name = "hit24_fixpT"
+absorbers.CO2.file = "../../spectra/hit24_12CO2_co2win.jld2"
+conditions = { file = "../../data/tower_pT_20160921.csv", max_offset_s = 60 }
+retrieval = { retrieve_pressure = false, retrieve_temperature = false }

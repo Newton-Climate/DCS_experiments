@@ -1,0 +1,88 @@
+# Cross-line-list CH4 experiments (former linelist_errors.jl driver): the synthetic truth is
+# computed with one CH4 line list and retrieved with another, on the US Standard atmosphere
+# of us_standard_ch4.toml (whose settings this file inherits; its variants are not).
+#   truth HITRAN 2008 → retrieved with HITRAN 2008 (control), 2016, 2020, TCCON 2020
+# × mode profile / isotherm / isobar. H2O and CO2 use HITRAN 2020 in truth and retrieval;
+# every run has the same noise realization (seed 1), so a retrieval minus its control
+# isolates the line-list error. Variant names: truth-<truth>_retr-<retrieval>_<mode>.
+# Analysis: ../linelist_errors.jl.
+#
+#   julia --project=../../SpectralFit.jl ../../SpectralFit.jl/bin/run_config.jl configs/crosslist_ch4.toml [variant ...]
+
+extends = "us_standard_ch4.toml"
+experiment = "crosslist_ch4"
+
+# Interfering gases, HITRAN 2020 in truth and retrieval (the CH4 cross sections are set per variant)
+[gases.H2O]
+cross_section = { file = "../../spectra/hit20_H2O.par", molecule = 1, range_cm = [6050.0, 6120.0] }
+
+[gases.CO2]
+cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6050.0, 6120.0] }
+
+[[variants]]
+name = "truth-HIT08_retr-HIT08_profile"
+gases.CH4.cross_section = { file = "../../spectra/hit08_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+gases.CH4.truth_cross_section = { file = "../../spectra/hit08_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+
+[[variants]]
+name = "truth-HIT08_retr-HIT16_profile"
+gases.CH4.cross_section = { file = "../../spectra/hit16_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+gases.CH4.truth_cross_section = { file = "../../spectra/hit08_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+
+[[variants]]
+name = "truth-HIT08_retr-HIT20_profile"
+gases.CH4.cross_section = { file = "../../spectra/hit20_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+gases.CH4.truth_cross_section = { file = "../../spectra/hit08_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+
+[[variants]]
+name = "truth-HIT08_retr-TCCON_profile"
+gases.CH4.cross_section = { file = "../../spectra/tccon_2020.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+gases.CH4.truth_cross_section = { file = "../../spectra/hit08_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+
+[[variants]]
+name = "truth-HIT08_retr-HIT08_isotherm"
+atmosphere.mode = "isotherm"
+gases.CH4.cross_section = { file = "../../spectra/hit08_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+gases.CH4.truth_cross_section = { file = "../../spectra/hit08_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+
+[[variants]]
+name = "truth-HIT08_retr-HIT16_isotherm"
+atmosphere.mode = "isotherm"
+gases.CH4.cross_section = { file = "../../spectra/hit16_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+gases.CH4.truth_cross_section = { file = "../../spectra/hit08_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+
+[[variants]]
+name = "truth-HIT08_retr-HIT20_isotherm"
+atmosphere.mode = "isotherm"
+gases.CH4.cross_section = { file = "../../spectra/hit20_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+gases.CH4.truth_cross_section = { file = "../../spectra/hit08_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+
+[[variants]]
+name = "truth-HIT08_retr-TCCON_isotherm"
+atmosphere.mode = "isotherm"
+gases.CH4.cross_section = { file = "../../spectra/tccon_2020.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+gases.CH4.truth_cross_section = { file = "../../spectra/hit08_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+
+[[variants]]
+name = "truth-HIT08_retr-HIT08_isobar"
+atmosphere.mode = "isobar"
+gases.CH4.cross_section = { file = "../../spectra/hit08_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+gases.CH4.truth_cross_section = { file = "../../spectra/hit08_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+
+[[variants]]
+name = "truth-HIT08_retr-HIT16_isobar"
+atmosphere.mode = "isobar"
+gases.CH4.cross_section = { file = "../../spectra/hit16_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+gases.CH4.truth_cross_section = { file = "../../spectra/hit08_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+
+[[variants]]
+name = "truth-HIT08_retr-HIT20_isobar"
+atmosphere.mode = "isobar"
+gases.CH4.cross_section = { file = "../../spectra/hit20_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+gases.CH4.truth_cross_section = { file = "../../spectra/hit08_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+
+[[variants]]
+name = "truth-HIT08_retr-TCCON_isobar"
+atmosphere.mode = "isobar"
+gases.CH4.cross_section = { file = "../../spectra/tccon_2020.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+gases.CH4.truth_cross_section = { file = "../../spectra/hit08_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }

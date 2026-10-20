@@ -1,0 +1,35 @@
+# Campaign retrieval with TCCON 2020 CH4, CO2, H2O and HDO (was run_tccon.jl):
+# every .h5 file in ../../data, 15-minute averages, p and T retrieved, 100 baseline
+# coefficients, CH4 line masks (campaign_2016.toml).
+# The CH4 and CO2 windows are retrieved separately, as in v0.1:
+#   tccon_ch4   6050-6115 cm-1
+#   tccon_co2   6180-6260 cm-1
+#
+# Commit 11ece7c copied run_hit08.jl over run_tccon.jl and left it with the HITRAN 2008 CH4 and
+# HITRAN 2020 CO2 tables, so that experiment duplicated hit08; the tccon_12CH4 / tccon_12CO2 tables
+# are restored here.
+#
+# Lookup tables span both windows (6049-6263 cm-1); build them with
+# ../../spectra/make_lookup_tables.jl (see ../README.md).
+#
+# Run:  julia --project=../../../SpectralFit.jl ../../../SpectralFit.jl/bin/run_config.jl tccon.toml [ch4 | co2]
+
+extends = "campaign_2016.toml"
+experiment = "tccon"
+
+[absorbers.H2O]
+file = "../../spectra/tccon_H2O.jld2"
+[absorbers.HDO]
+file = "../../spectra/tccon_HDO.jld2"
+[absorbers.CO2]
+file = "../../spectra/tccon_12CO2.jld2"
+[absorbers.CH4]
+file = "../../spectra/tccon_12CH4.jld2"
+
+[[variants]]
+name = "ch4"
+retrieval.window_cm = [6050.0, 6115.0]
+
+[[variants]]
+name = "co2"
+retrieval.window_cm = [6180.0, 6260.0]

@@ -1,0 +1,65 @@
+# CH4 window on the US Standard atmosphere (former run_profiles.jl, species CH4).
+#   profile:  full T(z) and p(z)
+#   isotherm: every layer at the column-weighted mean T; p(z) kept
+#   isobar:   every layer at the column-weighted mean p; T(z) kept
+# *_tables variants use the cross-section tables of make_profile_tables.jl (fast).
+#
+#   julia --project=../../SpectralFit.jl ../../SpectralFit.jl/bin/run_config.jl configs/us_standard_ch4.toml [variant ...]
+
+extends = "us_standard.toml"
+experiment = "us_standard_ch4"
+target = "CH4"
+window_cm = [6050.0, 6120.0]
+measurement_space = "log"         # v0.1 `linear = true`
+
+[solver]
+initial_damping = 40.0
+
+[gases.CH4]
+truth = { kind = "linear", bottom = 2000e-9, top = 1900e-9 }
+prior = 1950e-9
+sigma = 500e-9
+correlation_length = 0.5
+
+# Cross sections are set in each variant: a variant's tables are merged into the file's,
+# so a lookup-table spec ({ file }) cannot replace a line-list spec ({ file, molecule, range_cm }).
+
+[[variants]]
+name = "profile"
+gases.CH4.cross_section = { file = "../../spectra/hit08_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+gases.H2O.cross_section = { file = "../../spectra/hit20_H2O.par", molecule = 1, range_cm = [6050.0, 6120.0] }
+gases.CO2.cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6050.0, 6120.0] }
+
+[[variants]]
+name = "isotherm"
+atmosphere.mode = "isotherm"
+gases.CH4.cross_section = { file = "../../spectra/hit08_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+gases.H2O.cross_section = { file = "../../spectra/hit20_H2O.par", molecule = 1, range_cm = [6050.0, 6120.0] }
+gases.CO2.cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6050.0, 6120.0] }
+
+[[variants]]
+name = "isobar"
+atmosphere.mode = "isobar"
+gases.CH4.cross_section = { file = "../../spectra/hit08_12CH4.par", molecule = 6, range_cm = [6050.0, 6120.0] }
+gases.H2O.cross_section = { file = "../../spectra/hit20_H2O.par", molecule = 1, range_cm = [6050.0, 6120.0] }
+gases.CO2.cross_section = { file = "../../spectra/hit20_12CO2.par", molecule = 2, range_cm = [6050.0, 6120.0] }
+
+[[variants]]
+name = "profile_tables"
+gases.CH4.cross_section = { file = "../../spectra/profile_tables/CH4_CH4.jld2" }
+gases.H2O.cross_section = { file = "../../spectra/profile_tables/CH4_H2O.jld2" }
+gases.CO2.cross_section = { file = "../../spectra/profile_tables/CH4_CO2.jld2" }
+
+[[variants]]
+name = "isotherm_tables"
+atmosphere.mode = "isotherm"
+gases.CH4.cross_section = { file = "../../spectra/profile_tables/CH4_CH4.jld2" }
+gases.H2O.cross_section = { file = "../../spectra/profile_tables/CH4_H2O.jld2" }
+gases.CO2.cross_section = { file = "../../spectra/profile_tables/CH4_CO2.jld2" }
+
+[[variants]]
+name = "isobar_tables"
+atmosphere.mode = "isobar"
+gases.CH4.cross_section = { file = "../../spectra/profile_tables/CH4_CH4.jld2" }
+gases.H2O.cross_section = { file = "../../spectra/profile_tables/CH4_H2O.jld2" }
+gases.CO2.cross_section = { file = "../../spectra/profile_tables/CH4_CO2.jld2" }

@@ -1,0 +1,28 @@
+# CO2-window retrieval (6180-6260 cm-1) with the OCO ABSCO v5.1 CO2 cross sections, dry-air
+# broadener (the H2O VMR = 0 slice, h2o_indices = [1]), HITRAN 2008 CH4 and TCCON 2020 H2O
+# and HDO; every .h5 file in ../../data, 15-minute averages, p and T, 100 baseline
+# coefficients (was run_OCO.jl). Experiment oco_co2.
+#
+# v0.1 used a cubic lookup table made from the same file (OCO_12CO2_weakBand_000VMR.jld2);
+# this reads the ABSCO file directly (linear interpolation in nu, T and p). The table is about
+# 80 MB and is copied to every worker.
+#
+# Run:  julia --project=../../../SpectralFit.jl ../../../SpectralFit.jl/bin/run_config.jl oco.toml
+
+extends = "campaign_2016.toml"
+experiment = "oco_co2"
+
+[retrieval]
+window_cm = [6180.0, 6260.0]
+
+[absorbers.H2O]
+file = "../../spectra/tccon_H2O.jld2"
+[absorbers.HDO]
+file = "../../spectra/tccon_HDO.jld2"
+[absorbers.CH4]
+file = "../../spectra/hit08_12CH4.jld2"
+[absorbers.CO2]
+file = "../../spectra/OCO_spectra.hdf"
+gas = 2
+range_cm = [6178.0, 6262.0]
+h2o_indices = [1]

@@ -1,0 +1,54 @@
+# Tables over both campaign windows (CH4 6050-6115 and CO2 6180-6260 cm-1, plus the 1 cm-1
+# fine-grid margin), for configs hit08, hit16, hit20, tccon, ch4_broadening, oco, oco_h2o and
+# h2o_test in ../../DCS_retrievals/configs. About 340 MB each.
+# Replaces the full-range blocks of ../make_lookup_tables.jl. Not covered: OCO_H2O.jld2
+# (no H2O source in OCO_spectra.hdf).
+
+extends = "base.toml"
+wavenumber_cm = { start = 6048.0, stop = 6264.0, step = 0.003 }
+
+[[variants]]
+name = "hit08_12CH4"
+output_file = "../hit08_12CH4.jld2"
+source = { file = "../hit08_12CH4.par", molecule = 6, isotope = 1 }
+[[variants]]
+name = "hit16_12CH4"
+output_file = "../hit16_12CH4.jld2"
+source = { file = "../hit16_12CH4.par", molecule = 6, isotope = 1 }
+[[variants]]
+name = "hit20_12CH4"
+output_file = "../hit20_12CH4.jld2"
+source = { file = "../hit20_12CH4.par", molecule = 6, isotope = 1 }
+[[variants]]
+name = "tccon_12CH4"
+output_file = "../tccon_12CH4.jld2"
+source = { file = "../tccon_2020.par", molecule = 6, isotope = 1 }
+[[variants]]
+name = "hit16_12CO2"
+output_file = "../hit16_12CO2.jld2"
+source = { file = "../hit16_12CO2.par", molecule = 2, isotope = 1 }
+[[variants]]
+name = "hit20_12CO2"
+output_file = "../hit20_12CO2.jld2"
+source = { file = "../hit20_12CO2.par", molecule = 2, isotope = 1 }
+[[variants]]
+name = "tccon_12CO2"
+output_file = "../tccon_12CO2.jld2"
+source = { file = "../tccon_2020.par", molecule = 2, isotope = 1 }
+[[variants]]
+name = "tccon_H2O"
+output_file = "../tccon_H2O.jld2"
+source = { file = "../tccon_2020.par", molecule = 1, isotope = 1 }
+[[variants]]
+name = "tccon_HDO"
+output_file = "../tccon_HDO.jld2"
+# TCCON labels HDO as molecule 49 (COCl2 in HITRAN): relabel to HITRAN molecule 1, isotope 4
+source = { file = "../tccon_2020.par", molecule = 1, isotope = 4, relabel = ["491", " 14"] }
+[[variants]]
+name = "hit16_H2O"
+output_file = "../hit16_H2O.jld2"
+source = { file = "../hit16_H2O.par", molecule = 1, isotope = 1 }
+[[variants]]
+name = "hit20_H2O"
+output_file = "../hit20_H2O.jld2"
+source = { file = "../hit20_H2O.par", molecule = 1, isotope = 1 }
